@@ -1,0 +1,216 @@
+\documentclass[11pt]{amsart}          
+\usepackage[a4paper,verbose]{geometry}
+\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm,textheight=595pt}
+\setlength{\parskip}{0.3em}
+% ==============================
+% PACKAGES
+% ==============================
+
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{caption}
+\usepackage[inline]{enumitem}
+\setlist{itemsep=0em, topsep=0em, parsep=0em}
+\setlist[enumerate]{label=(\alph*)}
+\usepackage{etoolbox}
+\usepackage{stmaryrd} 
+\usepackage[dvipsnames]{xcolor}
+\usepackage[]{hyperref}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+\usepackage{mathtools}
+
+\usepackage{tikz-cd}
+\usepackage{minted}
+\usepackage{float}
+\usetikzlibrary{
+  matrix,
+  arrows,
+  shapes
+}
+
+\setcounter{tocdepth}{1} % Sets depth for table of contents. 
+
+% ======================================
+% MACROS
+%
+% Add your own macros below here
+% ======================================
+
+\newcommand{\rr}{{\mathbb{R}}}
+\newcommand{\nn}{{\mathbb{N}}}
+\newcommand{\iso}{\cong}
+\newcommand{\too}{\longrightarrow}
+\newcommand{\tto}{\rightrightarrows}
+\newcommand{\To}[1]{\xrightarrow{#1}}
+\newcommand{\Too}[1]{\To{\;\;#1\;\;}}
+\newcommand{\from}{\leftarrow}
+\newcommand{\From}[1]{\xleftarrow{#1}}
+\newcommand{\Cat}[1]{\mathbf{#1}}
+\newcommand{\cat}[1]{\mathcal{#1}}
+\newtheorem*{remark}{Remark}
+\renewcommand{\ss}{\subseteq}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
+  {\end{minted}}
+
+% ======================================
+% FRONT MATTER
+% ======================================
+
+\author{Bartosz Milewski}
+\title{Monoidal Catamorphisms}
+
+\begin{document}
+\maketitle{}
+
+I have recently watched a talk by \href{https://github.com/Gabriel439/slides/blob/master/munihac/foldmap.md}{Gabriel Gonzalez} about folds, which caught my attention because of my interest in both recursion schemes and optics. A \hask{Fold} is an interesting abstraction. It encapsulates the idea of focusing on a \emph{monoidal contents} of some data structure. Let me explain.
+
+Suppose you have a data structure that contains, among other things, a bunch of values from some monoid. You might want to summarize the data by traversing the structure and accumulating the monoidal values in an accumulator. You may, for instance, concatenate some strings, or add some integers. Because we are dealing with a monoid, we could even parallelize the accumulation. 
+
+In practice, however, data structures are rarely filled with monoidal values. Usually monoidal values have to be extracted or converted. 
+
+Problem: Traverse a containers of \hask{a}s, accumulating the result of type \hask{b}. In particular if \hask{a} is a monoid, it often makes sense to start with monoidal unit and accumulate the result using monoidal product. For instance, we might accumulate strings, starting from an empty string and use concatenation to aggregate results. Or we may add up numbers. In fact, it's enough to have a way of converting the contents of the container to monoidal values, perform the accumulation, and convert the result to some output type. This could be done, for instance by applying \hask{fmap} first, and then traversing the container to accumulate monoidal values. For performance reasons, we might prefer the two actions to be done in a single pass. 
+
+Here's a data structure that combines two functions, one converting \hask{a} to some monoidal value \hask{m} and the other converting the result to \hask{b}. The traversal itself should not depend on what monoid is being used, so this is an existential type.
+\begin{haskell}
+data Fold a b = forall m. Monoid m => Fold (a -> m) (m -> b)
+\end{haskell}
+In categorical notation we would write it as a coend over the category of monoids $\Cat{Mon}$ in some monoidal category $\Cat C$, with $U$ a forgetful functor
+\[\int^{m \in Mon} C(s, U m)\times C(U m, t)\]
+The simplest container to traverse is a list and, indeed, we can use a \hask{Fold} to fold a list. Here's the inefficient, but easy to understand implementation
+\begin{haskell}
+fold :: Fold a b -> [a] -> b
+fold (Fold s g) = g . mconcat . fmap s
+\end{haskell}
+A \hask{Fold} is a functor
+\begin{haskell}
+instance Functor (Fold a) where
+  fmap f (Fold scatter gather) = Fold scatter (f . gather)
+\end{haskell}
+In fact it's a \hask{Monoidal} functor
+\begin{haskell}
+class Monoidal f where
+  init :: f ()
+  combine :: f a -> f b -> f (a, b)
+\end{haskell}
+\begin{haskell}
+instance Monoidal (Fold a) where
+  -- Fold a ()
+  init = Fold bang id
+  -- Fold a b -> Fold a c -> Fold a (b, c)
+  combine (Fold s g) (Fold s' g') = Fold (tuple s s') (bimap g g')
+\end{haskell}
+\begin{haskell}
+bang :: a -> ()
+bang _ = ()
+
+tuple :: (c -> a) -> (c -> b) -> (c -> (a, b))
+tuple f g = \c -> (f c, g c)
+\end{haskell}
+A monoidal functor is automatically applicative---a property that can be used to aggregate \hask{Fold}s.
+
+A list is the simplest example of a recursive data structure. More general recursive data structures may be described as initial algebras or fixed points of endofunctors. List folds can be generalized to catamorphisms. 
+
+\section{Algebras and catamorphisms}
+
+Here's a short recap of simple recursion schemes. An algebra for a functor \hask{f} with the carrier \hask{a} is defined as
+\begin{haskell}
+type Algebra f a = f a -> a
+\end{haskell}
+A fixed point of a functor is the carrier of the initial algebra
+\begin{haskell}
+newtype Fix f = Fix { unFix :: f (Fix f) }
+\end{haskell}
+A catamorphism generalizes a fold
+\begin{haskell}
+cata :: Functor f => Algebra f a -> Fix f -> a
+cata alg = alg . fmap (cata alg) . unFix
+\end{haskell}
+
+\subsection{Monoidal algebras}
+We would like to use a \hask{Fold} to fold an arbitrary recursive data structure. We are interested in data structures that store values of type \hask{a} that can be converted to monoidal values. Such structures are generated by functors of two arguments (bifunctors). The first argument is the payload and the second is the placeholder for recursion. We define a monoidal algebra for such a functor by assuming that it has a monoidal payload and that the child nodes have already been evaluated to a monoidal value
+\begin{haskell}
+type MAlgebra f = forall m. Monoid m => f m m -> m
+\end{haskell}
+A monoidal algebra is polymorphic in the monoid reflecting our assumption that the evaluation is only allowed to use monoidal unit and multiplication. 
+
+Given a monoidal algebra and a \hask{Fold}, we can use a catamorphism to fold a recursive data structure given by a fixed point of a bifunctor
+\begin{haskell}
+cat :: Bifunctor f => MAlgebra f -> Fold a b -> Fix (f a) -> b
+cat malg (Fold s g) = g . cata alg
+  where
+    alg = malg . bimap s id
+\end{haskell}
+We can perform this operation because a bifunctor is automatically a functor in its second argument
+\begin{haskell}
+instance Bifunctor f => Functor (f a) where
+  fmap g = bimap id g
+\end{haskell}
+\section{Example}
+Here's a simple example. We define a bifunctor that generates a binary tree with payload stored at the leaves
+\begin{haskell}
+data TreeF a r = Leaf a | Node r r
+\end{haskell}
+It is indeed a bifunctor
+\begin{haskell}
+instance Bifunctor TreeF where
+  bimap f g (Leaf a) = Leaf (f a)
+  bimap f g (Node r r') = Node (g r) (g r')
+\end{haskell}
+The recursive tree is geneerated as its fixed point
+\begin{haskell}
+type Tree a = Fix (TreeF a)
+\end{haskell}
+We define two smart constructors to simplify the construction of trees
+\begin{haskell}
+leaf :: a -> Tree a
+leaf a = Fix (Leaf a)
+
+node :: Tree a -> Tree a -> Tree a
+node t t' = Fix (Node t t')
+\end{haskell}
+We can define a monoidal algebra for our functor. Notice that it only uses monoidal operations (we don't need the monoidal unit in this case, since values are stored in the leaves)
+\begin{haskell}
+myAlg :: MAlgebra TreeF
+myAlg (Leaf m) = m
+myAlg (Node m m') = m <> m'
+\end{haskell}
+Separately, we define a \hask{Fold} whose internal monoid is \hask{Sum Int}. It converts \hask{Double} values to this monoid, and converts the result to a \hask{String}
+\begin{haskell}
+myFold :: Fold Double String
+myFold = Fold floor' show'
+  where
+    floor' :: Double -> Sum Int
+    floor' = Sum . floor
+    show' :: Sum Int -> String
+    show' = show . getSum
+\end{haskell}
+Here's a small tree containing three \hask{Double}s
+\begin{haskell}
+myTree :: Tree Double
+myTree = node (node (leaf 2.3) (leaf 10.3)) (leaf 1.1)
+\end{haskell}
+We can now monoidally fold this tree and display the resulting \hask{String}
+\begin{haskell}
+> cat myAlg myFold myTree
+> "13"
+\end{haskell}
+The following pragmas were used in this program
+\begin{haskell}
+{-# language ExistentialQuantification #-}
+{-# language RankNTypes #-}
+{-# language FlexibleInstances #-}
+{-# language IncoherentInstances #-}
+\end{haskell}
+
+\end{document}

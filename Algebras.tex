@@ -1,0 +1,242 @@
+\documentclass[11pt]{amsart}          
+\usepackage[a4paper,verbose]{geometry}
+\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm,textheight=595pt}
+\setlength{\parskip}{0.3em}
+% ==============================
+% PACKAGES
+% ==============================
+
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{caption}
+\usepackage[inline]{enumitem}
+\setlist{itemsep=0em, topsep=0em, parsep=0em}
+\setlist[enumerate]{label=(\alph*)}
+\usepackage{etoolbox}
+\usepackage{stmaryrd} 
+\usepackage[dvipsnames]{xcolor}
+\usepackage[]{hyperref}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+\usepackage{mathtools}
+
+\usepackage{tikz-cd}
+\usepackage{minted}
+\usepackage{float}
+\usetikzlibrary{
+  matrix,
+  arrows,
+  shapes
+}
+
+\setcounter{tocdepth}{1} % Sets depth for table of contents. 
+
+% ======================================
+% MACROS
+%
+% Add your own macros below here
+% ======================================
+
+\newcommand{\rr}{{\mathbb{R}}}
+\newcommand{\nn}{{\mathbb{N}}}
+\newcommand{\iso}{\cong}
+\newcommand{\too}{\longrightarrow}
+\newcommand{\tto}{\rightrightarrows}
+\newcommand{\To}[1]{\xrightarrow{#1}}
+\newcommand{\Too}[1]{\To{\;\;#1\;\;}}
+\newcommand{\from}{\leftarrow}
+\newcommand{\From}[1]{\xleftarrow{#1}}
+\newcommand{\Cat}[1]{\mathbf{#1}}
+\newcommand{\cat}[1]{\mathcal{#1}}
+\newtheorem*{remark}{Remark}
+\renewcommand{\ss}{\subseteq}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
+  {\end{minted}}
+
+% ======================================
+% FRONT MATTER
+% ======================================
+
+\author{Bartosz Milewski}
+\title{Fixed Points of Endofunctors}
+
+\begin{document}
+In Haskell, least fixed point and greatest fixed point, when uniquely defined, coincide. We can still define them separately by directly encoding their universal property. 
+
+The initial algebra can be defined by its mapping out property.
+
+\begin{haskell}
+newtype Mu f = Mu (forall a. (f a -> a) -> a)
+\end{haskell}
+Notice that this definition requires the following language pragma
+\begin{haskell}
+{-# language RankNTypes #-}
+\end{haskell}
+This definition works because for every least fixed point one can define a catamorphism, which can be rewritten as
+\begin{haskell}
+cata :: Functor f => Fix f -> (forall a . (f a -> a) -> a)
+cata (Fix x) = \alg -> alg (fmap (flip cata alg) x)
+\end{haskell}
+(\hask{flip} is a function that reverses the order of arguments of its (function) argument.) What the definition of \hask{Mu} is saying is that it's an object that, for all algebras, has a mapping out to a catamorphism.
+
+It's easy to define a catamorphism in terms of \hask{Mu}, since \hask{Mu} \emph{is} a catamorphism
+\begin{haskell}
+cataMu :: Functor f => Algebra f a -> Mu f -> a
+cataMu alg (Mu cata) = cata alg
+\end{haskell}
+The challenge is to construct terms of type \hask{Mu f}. For instance, let's convert a list of \hask{a} to a term of type \hask{Mu (ListF a)}
+\begin{haskell}
+mkList :: forall a. [a] -> Mu (ListF a)
+mkList as = Mu cata
+  where cata :: forall x. (ListF a x -> x) -> x
+        cata unf = go as
+          where
+            go [] = unf NilF
+            go (n: ns) = unf (ConsF n (go ns))
+\end{haskell}
+Notice that we use the type \hask{a} defined in the type signature of \hask{mkList} to define the type signature of the helper function \hask{cata}. For the compiler to identify the two, we have to use the pragma
+\begin{haskell}
+{-# language ScopedTypeVariables #-}
+\end{haskell}
+You can now verify that
+\begin{haskell}
+cataMu myAlg (mkList [1..10])
+\end{haskell}
+produces the correct result for the following algebra
+\begin{haskell}
+myAlg :: Algebra (ListF Int) Int
+myAlg NilF = 0
+myAlg (ConsF a x) = a + x
+\end{haskell}
+
+The terminal coalgebra, on the other hand, is defined by its mapping in property. This requires a definition in terms of existential types. If Haskell had an existential quantifier, we could write the following definition for the terminal coalgebra
+\begin{haskell}
+data Nu f =  Nu (exists a. (a -> f a, a))
+\end{haskell}
+Existential types can be encoded in Haskell using the so called Generalized Algebraic Data Types or GADTs
+\begin{haskell}
+data Nu f where 
+  Nu :: (a -> f a) -> a -> Nu f
+\end{haskell}
+The use of GADTs requires the language pragma 
+\begin{haskell}
+{-# language GADTs #-}
+\end{haskell}
+
+The argument is that, for every greatest fixed point one can define an anamorphism
+
+\begin{haskell}
+ana :: Functor f => forall a. (a -> f a) -> a -> Fix f
+ana coa x = Fix (fmap (ana coa) (coa x))
+\end{haskell}
+We can uncurry it
+\begin{haskell}
+ana :: Functor f => forall a. (a -> f a, a) -> Fix f
+ana (coa, x) = Fix (fmap (curry ana coa) (coa x))
+\end{haskell}
+A universally quantified mapping out 
+\begin{haskell}
+forall a. ((a -> f a, a) -> Fix f)
+\end{haskell}
+is equivalent to a mapping out of an existential type (in pseudo-Haskell)
+\begin{haskell}
+(exists a. (a -> f a, a)) -> Fix f
+\end{haskell}
+which is the type signature of the constructor of \hask{Nu f}.
+
+The intuition is that, if you want to implement a function from an existential type---a type which hides some other type \hask{a} to which you have no access---your function has to be prepared to handle any \hask{a}. In other words, it has to be polymorphic in \hask{a}. 
+
+Since in an existential type we have no access to the hidden type, it has to provide both the ``producer'' and the ``consumer'' for this type. Here we are given a value of type \hask{a} on the produces side, and the function \hask{a -> f a} as the consumer. All we can do is to apply this function to \hask{a} and obtain the term of the type \hask{f a}. Since \hask{f} is a functor, we can lift our function and apply it again, to get something of the type \hask{f (f a)}. Continuing this process, we can obtain arbitrary powers of \hask{f} acting on \hask{a}. We get a recursive data type.
+
+An anamorphism in terms of \hask{Nu} is given by
+\begin{haskell}
+anaNu :: Functor f => Coalgebra f a -> a -> Nu f
+anaNu coa a = Nu coa a
+\end{haskell}
+
+Notice however that we cannot directly pass the result of \hask{anaNu} to \hask{cataMu} because we are no longer guaranteed that the initial algebra is the same as the terminal coalgebra for a given functor.
+
+\section{End/Coend formulation}
+
+\hask{Mu} can be rewritten as
+\begin{haskell}
+data Mu f where
+  Mu :: (forall a. (f a -> a) -> a) -> Mu f
+\end{haskell}
+
+
+\[\mu f = \int_a a^{C(f a, a)}\]
+End over profunctor
+\[p a b = b^{ C(f b, a)}\]
+
+\begin{haskell}
+data Nu f where 
+  Nu :: (a -> f a) -> a -> Nu f
+\end{haskell}
+\[\nu f = \int^a a \times C(a, f a)\]
+Coend over profunctor
+\[p a b = b \times C(a, f b)\]
+
+Because of Lambek's lemma, an initial algebra is also a coalgebra, and a terminal coalgebra is also an algebra. Universality, therefore, tells us that there is a unique algebra morphism (as well as a unique coalgebra morphism) $\mu f \to \nu f$,  but not necessarily the other way around.
+
+These formulas are reminescent of Kan extensions. For comparison
+\[(Lan_f g) c = \int^a (g a) \times C(f a, c)\]
+\[(Ran_f g) c = \int_a (g a)^{C(c, f a)}\]
+If $f$ has left and right adjoints, they are given by
+\[Ran_f Id \dashv f \dashv Lan_f Id\]
+In particular, using the adjunction
+\[(Lan_f Id) c = \int^a a \times C(a, (Lan_f Id) c)\]
+
+The two profunctors in the definition of \hask{Mu} and \hask{Nu} can be written as
+\begin{haskell}
+data M f a b = M ((f b -> a) -> b)
+\end{haskell}
+
+\begin{haskell}
+instance Functor f => Profunctor (M f) where
+  dimap g g' (M h) = M (\j -> g'( h (g . j . fmap g')))
+\end{haskell}
+
+\begin{haskell}
+data N f a b = N (a -> f b) b
+\end{haskell}
+
+\begin{haskell}
+instance Functor f => Profunctor (N f) where
+  dimap g g' (N h b) = N (fmap g' . h . g) (g' b)
+\end{haskell}
+
+\section{Ends as limits}
+
+Twisted arrow category on $\textit{Tw}(\Cat C)$ has, as objects, morphisms in $\Cat C$ (or, strictly speaking, triples $(a, b, f \colon a \to b)$). A morphism from $f \colon a \to b$ to $g \colon a' \to b'$ is a pair of morphisms 
+\[(h \colon a' \to a, h' \colon b \to b')\]
+For every profunctor $p \colon C^{op} \times C \to \Cat{Set}$ define a functor $\bar p \colon \textit{Tw}(\Cat C) \to Set$. On objects
+\[\bar p (a, b, f) = p a b\]
+and on morphisms, it's just profunctor lifting.
+
+It can be shown that the end is just a limit over the twisted arrow category
+\[\int_c p c c \cong \lim_{Tw(C)} \bar p\]
+Similarly, the coend is a colimit over $Tw(C^{op} )^{op}$
+\[\int^c p c c \cong \underset {Tw(C^{op})^{op}}  { \mbox{colim}} \bar p\]
+
+\[Set \Big(\int^a a \times C(a, f a), \int_b b^{C(f b, b)\Big)}\]
+
+\[ \int_a Set \Big( a \times C(a, f a), \int_b b^{C(f b, b)\Big)}\]
+
+\[ \int_{a, b} Set \Big( a \times C(a, f a), b^{C(f b, b)\Big)}\]
+
+\[ \int_{a, b} Set \Big( a \times C(a, f a) \times C(f b, b), b\Big)\]
+
+
+\end{document}
+\maketitle{}
