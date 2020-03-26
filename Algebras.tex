@@ -71,6 +71,62 @@
 \title{Fixed Points of Endofunctors}
 
 \begin{document}
+\section{Expressions}
+When we see an algebraic expression like
+\[x^2 + 2 x + 3\]
+we parse it as a tree. We start with
+
+\begin{tikzpicture}[
+    level distance=3em,
+  every node/.style = {shape=rectangle, rounded corners,
+    draw, align=center,
+    top color=white, bottom color=blue!20}]
+    \tikzstyle{level 1}=[sibling distance=6em]
+  \node {$+$}
+    child { node {$x^2$} }
+    child { node {$3 x + 4$} };
+\end{tikzpicture}
+
+We then recursive expand the nodes
+
+\begin{tikzpicture}[
+    level distance=3em,
+  every node/.style = {shape=rectangle, rounded corners,
+    draw, align=center,
+    top color=white, bottom color=blue!20}]
+    \tikzstyle{level 1}=[sibling distance=12em]
+    \tikzstyle{level 2}=[sibling distance=6em]
+  \node {$+$}
+    child { node {$*$} 
+       child { node {$x$} } 
+       child { node {$x$} } }
+    child { node {$+$}
+      child { node {$*$}
+        child { node {$3$} }
+        child { node {$x$} } }
+      child { node {$4$} } };
+\end{tikzpicture}
+
+A parser of algebraic expressions would parse it into a tree data structure
+
+\begin{tikzpicture}[
+    level distance=3em,
+  every node/.style = {shape=rectangle, rounded corners,
+    draw, align=center,
+    top color=white, bottom color=blue!20}]
+    \tikzstyle{level 1}=[sibling distance=12em]
+    \tikzstyle{level 2}=[sibling distance=6em]
+  \node {Plus}
+    child { node {Times} 
+       child { node {Var "x"} } 
+       child { node {Var "x"} } }
+    child { node {Plus}
+      child { node {Times}
+        child { node {Const 3} }
+        child { node {Var "x"} } }
+      child { node {Const 4} } };
+\end{tikzpicture}
+
 \section{Examples}
 \begin{haskell}
 data F a = Leaf 
@@ -601,6 +657,136 @@ Terminal coalgebra is a limit, and initial algebra is a colimit of these two cha
    \arrow[u, "j"]
 \end{tikzcd}
 \end{figure}
+
+\section{Algebra morphisms}
+
+\begin{tikzcd}
+  F[A] 
+  \arrow[r,"F(f)"] 
+  \arrow[d,"a"'] 
+  & F[B] 
+  \arrow[d,"b"]
+  \\
+  A 
+  \arrow[r,"f"'] 
+  & B
+\end{tikzcd}
+
+Composition
+
+\begin{tikzcd}
+  F[A] 
+  \arrow[r,"F(f)"] 
+  \arrow[d,"a"'] 
+  & F[B] 
+  \arrow[r,"F(g)"]
+  \arrow[d,"b"]
+  & F[C]
+  \arrow[d, "c"]
+  \\
+  A 
+  \arrow[r,"f"'] 
+  & B
+  \arrow[r, "g"']
+  & C
+\end{tikzcd}
+
+Identity
+
+\begin{tikzcd}
+  F[A] 
+  \arrow[r,"id"] 
+  \arrow[d,"a"'] 
+  & F[A] 
+  \arrow[d,"a"]
+  \\
+  A 
+  \arrow[r,"id"'] 
+  & A
+\end{tikzcd}
+
+Initial algebra
+
+\begin{tikzcd}
+  F[I] 
+  \arrow[r,"F(m)"] 
+  \arrow[d,"j"'] 
+  & F[A] 
+  \arrow[d,"a"]
+  \\
+  I 
+  \arrow[r,"m"'] 
+  & A
+\end{tikzcd}
+
+\begin{tikzcd}
+  F[Fix[F]] 
+  \arrow[r,"F(m)"] 
+  \arrow[d, dashed, bend right, "in"'] 
+  & F[A] 
+  \arrow[d,"alg"]
+  \\
+  Fix[F]
+  \arrow[u, bend right, "out"']
+  \arrow[r,"m"'] 
+  & A
+\end{tikzcd}
+
+\begin{tikzcd}
+  F I 
+  \arrow[r,"F m "] 
+  \arrow[d,"j"'] 
+  & F A 
+  \arrow[d,"a"]
+  \\
+  I 
+  \arrow[r,"m"'] 
+  & A
+\end{tikzcd}
+
+\begin{tikzcd}
+  F I 
+  \arrow[r,"F m "] 
+  \arrow[d,"j"'] 
+  & F (F I)
+  \arrow[d,"F j"]
+  \\
+  I 
+  \arrow[r,"m"'] 
+  & F I
+\end{tikzcd}
+
+
+\begin{tikzcd}
+  F (F I )
+  \arrow[r,"F j "] 
+  \arrow[d,"F j"'] 
+  & F I
+  \arrow[d,"j"]
+  \\
+  F I 
+  \arrow[r,"j"'] 
+  & I
+\end{tikzcd}
+
+
+\begin{tikzcd}
+  F I 
+  \arrow[r,"F m "] 
+  \arrow[d,"j"'] 
+  & F (F I)
+  \arrow[r, "F j"]
+  \arrow[d,"F j"]
+  & F I
+  \arrow[d,"j"]
+  \\
+  I 
+  \arrow[r,"m"'] 
+  & F I
+  \arrow[r,"j"'] 
+  & I
+\end{tikzcd}
+
 
 
 \end{document}
