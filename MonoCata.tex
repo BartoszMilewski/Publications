@@ -75,23 +75,21 @@
 
 I have recently watched a talk by \href{https://github.com/Gabriel439/slides/blob/master/munihac/foldmap.md}{Gabriel Gonzalez} about folds, which caught my attention because of my interest in both recursion schemes and optics. A \hask{Fold} is an interesting abstraction. It encapsulates the idea of focusing on a \emph{monoidal contents} of some data structure. Let me explain.
 
-Suppose you have a data structure that contains, among other things, a bunch of values from some monoid. You might want to summarize the data by traversing the structure and accumulating the monoidal values in an accumulator. You may, for instance, concatenate some strings, or add some integers. Because we are dealing with a monoid, we could even parallelize the accumulation. 
+Suppose you have a data structure that contains, among other things, a bunch of values from some monoid. You might want to summarize the data by traversing the structure and accumulating the monoidal values in an accumulator. You may, for instance, concatenate strings, or add integers. Because we are dealing with a monoid, we could even parallelize the accumulation. 
 
-In practice, however, data structures are rarely filled with monoidal values. Usually monoidal values have to be extracted or converted. 
-
-Problem: Traverse a containers of \hask{a}s, accumulating the result of type \hask{b}. In particular if \hask{a} is a monoid, it often makes sense to start with monoidal unit and accumulate the result using monoidal product. For instance, we might accumulate strings, starting from an empty string and use concatenation to aggregate results. Or we may add up numbers. In fact, it's enough to have a way of converting the contents of the container to monoidal values, perform the accumulation, and convert the result to some output type. This could be done, for instance by applying \hask{fmap} first, and then traversing the container to accumulate monoidal values. For performance reasons, we might prefer the two actions to be done in a single pass. 
+In practice, however, data structures are rarely filled with monoidal values. Usually monoidal values have to be extracted from a container. We need a way to convert the contents of the container to monoidal values, perform the accumulation, and convert the result to some output type. This could be done, for instance by applying \hask{fmap} first, and then traversing the container to accumulate monoidal values. For performance reasons, we might prefer the two actions to be done in a single pass. 
 
 Here's a data structure that combines two functions, one converting \hask{a} to some monoidal value \hask{m} and the other converting the result to \hask{b}. The traversal itself should not depend on what monoid is being used, so this is an existential type.
 \begin{haskell}
 data Fold a b = forall m. Monoid m => Fold (a -> m) (m -> b)
 \end{haskell}
-In categorical notation we would write it as a coend over the category of monoids $\Cat{Mon}$ in some monoidal category $\Cat C$, with $U$ a forgetful functor
-\[\int^{m \in Mon} C(s, U m)\times C(U m, t)\]
 The simplest container to traverse is a list and, indeed, we can use a \hask{Fold} to fold a list. Here's the inefficient, but easy to understand implementation
 \begin{haskell}
 fold :: Fold a b -> [a] -> b
 fold (Fold s g) = g . mconcat . fmap s
 \end{haskell}
+See Gabriel's blog post for a more efficient implementation.
+
 A \hask{Fold} is a functor
 \begin{haskell}
 instance Functor (Fold a) where
@@ -212,5 +210,9 @@ The following pragmas were used in this program
 {-# language FlexibleInstances #-}
 {-# language IncoherentInstances #-}
 \end{haskell}
+\section{Relation to Optics}
+In categorical notation we would write it as a coend over the category of monoids $\Cat{Mon}$ in some monoidal category $\Cat C$, with $U$ a forgetful functor
+\[\int^{m \in Mon} C(s, U m)\times C(U m, t)\]
+
 
 \end{document}
