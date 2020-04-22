@@ -1,0 +1,372 @@
+\documentclass[11pt]{amsart}          
+\usepackage[a4paper,verbose]{geometry}
+\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm,textheight=595pt}
+\setlength{\parskip}{0.3em}
+% ==============================
+% PACKAGES
+% ==============================
+
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{caption}
+\usepackage[inline]{enumitem}
+\setlist{itemsep=0em, topsep=0em, parsep=0em}
+\setlist[enumerate]{label=(\alph*)}
+\usepackage{etoolbox}
+\usepackage{stmaryrd} 
+\usepackage[dvipsnames]{xcolor}
+\usepackage[]{hyperref}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+\usepackage{mathtools}
+
+\usepackage{tikz-cd}
+\usepackage{minted}
+\usepackage{float}
+\usetikzlibrary{
+  matrix,
+  arrows,
+  shapes
+}
+
+\setcounter{tocdepth}{1} % Sets depth for table of contents. 
+
+% ======================================
+% MACROS
+%
+% Add your own macros below here
+% ======================================
+
+\newcommand{\rr}{{\mathbb{R}}}
+\newcommand{\nn}{{\mathbb{N}}}
+\newcommand{\iso}{\cong}
+\newcommand{\too}{\longrightarrow}
+\newcommand{\tto}{\rightrightarrows}
+\newcommand{\To}[1]{\xrightarrow{#1}}
+\newcommand{\Too}[1]{\To{\;\;#1\;\;}}
+\newcommand{\from}{\leftarrow}
+\newcommand{\From}[1]{\xleftarrow{#1}}
+\newcommand{\Cat}[1]{\mathbf{#1}}
+\newcommand{\cat}[1]{\mathcal{#1}}
+\newtheorem*{remark}{Remark}
+\renewcommand{\ss}{\subseteq}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
+  {\end{minted}}
+
+% ======================================
+% FRONT MATTER
+% ======================================
+
+\author{Bartosz Milewski}
+\title{Fixed Points of Endofunctors}
+
+\begin{document}
+
+\section{Initial algebra and catamorphism}
+
+The initial algebra can be defined by its mapping out property.
+
+\begin{haskell}
+newtype Mu f = Mu (forall a. (f a -> a) -> a)
+\end{haskell}
+Notice that this definition requires the following language pragma
+\begin{haskell}
+{-# language RankNTypes #-}
+\end{haskell}
+This definition works because for every least fixed point one can define a catamorphism, which can be rewritten as
+\begin{haskell}
+cata :: Functor f => Fix f -> (forall a . (f a -> a) -> a)
+cata (Fix x) = \alg -> alg (fmap (flip cata alg) x)
+\end{haskell}
+(\hask{flip} is a function that reverses the order of arguments of its (function) argument.) What the definition of \hask{Mu} is saying is that it's an object that, for all algebras, has a mapping out to a catamorphism.
+
+It's easy to define a catamorphism in terms of \hask{Mu}, since \hask{Mu} \emph{is} a catamorphism
+\begin{haskell}
+cataMu :: Functor f => Algebra f a -> Mu f -> a
+cataMu alg (Mu cata) = cata alg
+\end{haskell}
+The challenge is to construct terms of type \hask{Mu f}. For instance, let's convert a list of \hask{a} to a term of type \hask{Mu (ListF a)}
+\begin{haskell}
+mkList :: forall a. [a] -> Mu (ListF a)
+mkList as = Mu cata
+  where cata :: forall x. (ListF a x -> x) -> x
+        cata unf = go as
+          where
+            go [] = unf NilF
+            go (n: ns) = unf (ConsF n (go ns))
+\end{haskell}
+Notice that we use the type \hask{a} defined in the type signature of \hask{mkList} to define the type signature of the helper function \hask{cata}. For the compiler to identify the two, we have to use the pragma
+\begin{haskell}
+{-# language ScopedTypeVariables #-}
+\end{haskell}
+You can now verify that
+\begin{haskell}
+cataMu sumAlg (mkList [1..10])
+\end{haskell}
+produces the correct result for the following algebra
+\begin{haskell}
+sumAlg :: Algebra (ListF Int) Int
+sumAlg NilF = 0
+sumAlg (ConsF a x) = a + x
+\end{haskell}
+
+\section{Terminal coalgebra and anamorphism}
+
+The terminal coalgebra, on the other hand, is defined by its mapping in property. This requires a definition in terms of existential types. If Haskell had an existential quantifier, we could write the following definition for the terminal coalgebra
+\begin{haskell}
+data Nu f =  Nu (exists a. (a -> f a, a))
+\end{haskell}
+Existential types can be encoded in Haskell using the so called Generalized Algebraic Data Types or GADTs
+\begin{haskell}
+data Nu f where 
+  Nu :: (a -> f a) -> a -> Nu f
+\end{haskell}
+The use of GADTs requires the language pragma 
+\begin{haskell}
+{-# language GADTs #-}
+\end{haskell}
+
+The argument is that, for every greatest fixed point one can define an anamorphism
+
+\begin{haskell}
+ana :: Functor f => forall a. (a -> f a) -> a -> Fix f
+ana coa x = Fix (fmap (ana coa) (coa x))
+\end{haskell}
+We can uncurry it
+\begin{haskell}
+ana :: Functor f => forall a. (a -> f a, a) -> Fix f
+ana (coa, x) = Fix (fmap (curry ana coa) (coa x))
+\end{haskell}
+A universally quantified mapping out 
+\begin{haskell}
+forall a. ((a -> f a, a) -> Fix f)
+\end{haskell}
+is equivalent to a mapping out of an existential type (in pseudo-Haskell)
+\begin{haskell}
+(exists a. (a -> f a, a)) -> Fix f
+\end{haskell}
+which is the type signature of the constructor of \hask{Nu f}.
+
+The intuition is that, if you want to implement a function from an existential type---a type which hides some other type \hask{a} to which you have no access---your function has to be prepared to handle any \hask{a}. In other words, it has to be polymorphic in \hask{a}. 
+
+Since in an existential type we have no access to the hidden type, it has to provide both the ``producer'' and the ``consumer'' for this type. Here we are given a value of type \hask{a} on the produces side, and the function \hask{a -> f a} as the consumer. All we can do is to apply this function to \hask{a} and obtain the term of the type \hask{f a}. Since \hask{f} is a functor, we can lift our function and apply it again, to get something of the type \hask{f (f a)}. Continuing this process, we can obtain arbitrary powers of \hask{f} acting on \hask{a}. We get a recursive data type.
+
+An anamorphism in terms of \hask{Nu} is given by
+\begin{haskell}
+anaNu :: Functor f => Coalgebra f a -> a -> Nu f
+anaNu coa a = Nu coa a
+\end{haskell}
+
+Notice however that we cannot directly pass the result of \hask{anaNu} to \hask{cataMu} because we are no longer guaranteed that the initial algebra is the same as the terminal coalgebra for a given functor.
+
+\section{End/Coend formulation}
+
+Let's rewrite \hask{Mu} using GADTs
+\begin{haskell}
+data Mu f where
+  Mu :: (forall a. (f a -> a) -> a) -> Mu f
+\end{haskell}
+We use a natural transformation to construct a \hask{Mu}. Categorically, we can write it as an end
+\[\mu f = \int_a a^{C(f a, a)}\]
+It's an end over the profunctor
+\[p a b = b^{ C(f b, a)}\]
+Where the power is defined as
+\[ C(x, a^s) \cong Set(s, C(x, a)) \]
+
+Projection from the end is a catamorphism
+\[\pi_a \colon \mu f \to a^{C(f a, a)}\]
+It's a morphism from the hom-set
+\[C(\mu f, a^{C(f a, a)})\]
+or an element of
+\[Set(C(f a, a), C(\mu f, a))\]
+
+Similarly, we can rewrite \hask{Nu}
+\begin{haskell}
+data Nu f where 
+  Nu :: (a -> f a) -> a -> Nu f
+\end{haskell}
+as a coend
+\[\nu f = \int^a C(a, f a) \cdot a \]
+over the profunctor
+\[p a b = C(a, f b) \cdot b\]
+where the copower is defined as
+\[ C(s \cdot a, x) \cong Set(s, C(a, x))\]
+
+Injection into the coend is an anamorphism
+\[ \iota_a \colon C(a, f a) \cdot a \to \nu f\]
+It's a morphism from the hom-set
+\[C(C(a, f a) \cdot a, \nu f)\]
+or an element of
+\[Set(C(a, f a), C(a, \nu f))\]
+
+Because of Lambek's lemma, an initial algebra is also a coalgebra, and a terminal coalgebra is also an algebra. Universality, therefore, tells us that there is a unique algebra morphism (as well as a unique coalgebra morphism) 
+\[\phi \colon \mu f \to \nu f\]
+This is a canonical embedding, but not necessarily an isomorphism.
+
+The two profunctors in the definition of \hask{Mu} and \hask{Nu} can be written as
+\begin{haskell}
+data M f a b = M ((f b -> a) -> b)
+\end{haskell}
+
+\begin{haskell}
+instance Functor f => Profunctor (M f) where
+  dimap g g' (M h) = M (\j -> g'( h (g . j . fmap g')))
+\end{haskell}
+
+\begin{haskell}
+data N f a b = N (a -> f b) b
+\end{haskell}
+
+\begin{haskell}
+instance Functor f => Profunctor (N f) where
+  dimap g g' (N h b) = N (fmap g' . h . g) (g' b)
+\end{haskell}
+
+\section{Hylomorphism}
+
+If the mapping from from the terminal coalgebra $\nu$ to the initial algebra $\mu$ exists, it is an element of the following hom-set
+
+\[C \Big(\int^a C(a, f a) \cdot a, \int_b b^{C(f b, b)} \Big)\]
+
+By co-continuity of the hom-functor, this is isomorphic to
+
+\[ \int_a C \Big( C(a, f a) \cdot a, \int_b b^{C(f b, b)}\Big)\]
+
+Using continuity we get
+
+\[ \int_{a, b} C \Big( C(a, f a) \cdot a, b^{C(f b, b)}\Big)\]
+
+Using the definition of the copower
+\[ C(s \cdot a, x) \cong Set(s, C(a, x))\]
+we get
+\[ \int_{a, b} Set \Big(C(a, f a), C(a, b^{C(f b, b)})\Big)\]
+And using the definition of the power
+\[ C(x, a^s) \cong Set(s, C(x, a)) \]
+we get
+\[ \int_{a, b} Set \Big(C(a, f a), Set\big(C(f b, b), C(a, b)\big)\Big)\]
+Finally, applying the currying adjunction we get
+\[ \int_{a, b} Set \Big(C(a, f a) \times C(f b, b), C(a, b)\Big)\]
+in which you may recognize a hylomorphism
+
+\begin{haskell}
+hylo :: Functor f => Coalgebra f a -> Algebra f b -> a -> b
+hylo coa alg = alg . fmap (hylo coa alg) . coa
+\end{haskell}
+
+\section{Bibliography}
+\begin{itemize}
+  \item Michael Barr, \href{http://www.math.mcgill.ca/barr/papers/trmclg.pdf}{Terminal coalgebras for endofunctors on sets}
+\end{itemize}
+
+\section{Random things}
+\subsection{Initial algebra structure map}
+\[j \colon f (\mu f) \to \mu f\]
+\[C\Big(f (\mu f), \int_b b^{C(f b, b)}\Big)\]
+is a member of
+\[\int_b C\Big(f (\mu f), b^{C(f b, b)}\Big)\]
+Using the definition of the power
+\[ C(x, a^s) \cong Set(s, C(x, a)) \]
+we get
+\[\int_b Set\Big(C(f b, b), C\big( f (\mu f), b\big) \Big)\]
+Using Yoneda lemma we replace $b$ with $f (\mu f)$
+\[C(f (f (\mu f)), f (\mu f)) \]
+
+\subsection{Terminal coalgebra structure map}
+\[k \colon \nu f \to f (\nu f)\]
+is a member of
+\[ C\Big( \int^a C(a, f a) \cdot a, f  (\nu f) \Big)\]
+\[ \int_a C\Big( C(a, f a) \cdot a, f  (\nu f) \Big)\]
+Using the definition of the copower
+\[ C(s \cdot a, x) \cong Set(s, C(a, x))\]
+we get
+\[ \int_a Set\Big( C(a, f a), C\big( a, f  (\nu f) \big) \Big)\]
+Yoneda lemma
+\[ C(f(\nu f), f ( f (\nu f))) \]
+
+\subsection{Kan extensions}
+\[\mu f = \int_a a^{C(f a, a)}\]
+\[\nu f = \int^a C(a, f a) \cdot a \]
+These formulas are reminiscent of Kan extensions. 
+For comparison, the right  Kan extension of $g$ along $f$ is given by
+\[(Ran_f g) c = \int_a (g a)^{C(c, f a)}\]
+The left Kan extension is
+\[(Lan_f g) c = \int^a C(f a, c) \cdot g a \]
+If $f$ has left and right adjoints, they are given by
+\[Ran_f Id \dashv f \dashv Lan_f Id\]
+In particular, using the adjunction
+\[(Lan_f Id) c = \int^a C(a, (Lan_f Id) c) \cdot a\]
+This shows that $(Lan_f Id) c$ is a fixed point of the functor
+\[ \Phi(x) = \int^a C(a, x) \cdot a \]
+
+\subsection{Ends as limits}
+
+Twisted arrow category on $\textit{Tw}(\Cat C)$ has, as objects, morphisms in $\Cat C$ (or, strictly speaking, triples $(a, b, f \colon a \to b)$). A morphism from $f \colon a \to b$ to $g \colon a' \to b'$ is a pair of morphisms 
+\[(h \colon a' \to a, h' \colon b \to b')\]
+For every profunctor $p \colon C^{op} \times C \to \Cat{Set}$ define a functor $\bar p \colon \textit{Tw}(\Cat C) \to Set$. On objects
+\[\bar p (a, b, f) = p a b\]
+and on morphisms, it's just profunctor lifting.
+
+It can be shown that the end is just a limit over the twisted arrow category
+\[\int_c p c c \cong \lim_{Tw(C)} \bar p\]
+Similarly, the coend is a colimit over $Tw(C^{op} )^{op}$
+\[\int^c p c c \cong \underset {Tw(C^{op})^{op}}  { \mbox{colim}} \bar p\]
+
+\subsection{Iterative solution}
+Terminal coalgebra is a limit, and initial algebra is a colimit of these two chains
+\begin{figure}[H]
+\centering
+\begin{tikzcd}
+  f (\nu f)
+  \\
+  \nu f
+  \arrow[u, "k"]
+  \arrow[d, "\pi_1"]
+  \arrow[dr, "\pi_{(f 1)}"]
+  \arrow[drr, bend left, "\pi_{(f^2 1)}"]
+  \\
+  1
+  & f 1
+  \arrow[l, "\mbox{!`}"]
+  & f^2 1
+  \arrow[l, "f \mbox{!`}"]
+  & ...
+  \arrow[l, dashed]
+   \\
+  0
+   \arrow[u, "!"]
+  \arrow[r, "!"]
+  \arrow[d, ""]
+   \arrow[d, "\iota_0"]
+   &f 0
+   \arrow[u, "f !"]
+   \arrow[r, "f !"]
+   \arrow[dl, "\iota_{(f 0)}"]
+   &f^2 0
+   \arrow[u, "f^2 !"]
+   \arrow[r, dashed]
+   \arrow[dll, bend left, "\iota_{(f^2 0)}"]
+   & ...
+   \\
+   \mu f
+   \arrow[uuu, bend left, "\varphi"]
+   \\ 
+   f (\mu f)
+   \arrow[u, "j"]
+\end{tikzcd}
+\end{figure}
+
+
+
+
+\end{document}
+\maketitle{}
