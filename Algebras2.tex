@@ -569,6 +569,8 @@ tl :: Stream a -> Stream a
 tl (Fix (StreamF _ s)) = s
 \end{haskell}
 
+This is all true in $Set$, but Haskell is not $Set$. I had a discussion with Edward Kmett and he pointed out that Haskell's fixed point data type can be considered the initial algebra as well. Suppose that you have an infinite data structure, like the stream we were just discussing. If you apply a catamorphism for an arbitrary algebra to it, it will most likely never terminate (try summing up an infinite stream of integers). In Haskell, however, this is interpreted as the catamorphism returning the bottom $\bot$, which is a perfectly legitimate value. And once you start including bottoms in your reasoning, all bets are off. In particular \hask{Void} is no longer uninhabited---it contains $\bot$---and the colimit construction of the initial algebra is no longer valid. It's possible that some of the results can be generalized using domain theory and enriched categories, but I'm not aware of any such work.
+
 \section{Bibliography}
 \begin{itemize}
 \item Ad\'amek, \href{http://www.tac.mta.ca/tac/volumes/14/8/14-08.pdf}{Introduction to coalgebra}
