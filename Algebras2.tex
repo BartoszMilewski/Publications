@@ -336,7 +336,7 @@ Now that we have an $\omega$-chain, we can define its limit. It's easier to unde
 
 The simplest example of a limit is a product of sets. In that case, a cone with a singleton at the apex corresponds to a selection of elements, one per set. This agrees with our understanding of a product as a set of tuples. 
 
-A limit of a directed finite chain is just the starting set of the chain (the rightmost object in our pictures). This is because all projections, except for the rightmost one, are determined by commuting triangles. In the example below, $\pi_b$ is determined by $\pi_a$:
+A limit of a directed \emph{finite} chain is just the starting set of the chain (the rightmost object in our pictures). This is because all projections, except for the rightmost one, are determined by commuting triangles. In the example below, $\pi_b$ is determined by $\pi_a$:
 \[\pi_b = f_1 \circ \pi_a\]
 and so on. Here, every cone from $1$ is fully determined by a function $1 \to a$, and the set of such functions is isomorphic to $a$.
 \begin{figure}[H]
@@ -388,14 +388,14 @@ This functor has a well-defined non-empty terminal coalgebra. The $n$-th power o
 \begin{haskell}
 ConsF a1 (ConsF a2 (... (ConsF an ())...))
 \end{haskell}
-The lifting of \hask{unit} acting on such a list replaces \hask{(ConsF a ())} with \hask{()} thus shortening the list by one item. Its "inverse" replaces the seed \hask{()} with any value of type \hask{a} (so it's a \textit{multi-valued} inverse, since there are, in general, many values of \hask{a}). The limit is isomorphic to an infinite stream of \hask{a}. In Haskell it can be written as a recursive data structure
+The lifting of \hask{unit} acting on such a list replaces the final \hask{(ConsF a ())} with \hask{()} thus shortening the list by one item. Its "inverse" replaces the seed \hask{()} with any value of type \hask{a} (so it's a \textit{multi-valued} inverse, since there are, in general, many values of \hask{a}). The limit is isomorphic to an infinite stream of \hask{a}. In Haskell it can be written as a recursive data structure
 \begin{haskell}
 data Stream a = ConsF a (Stream a)
 \end{haskell}
 
 \section{Anamorphism}
 
-The limit of a diagram is defined as a universal cone. In our case this would be the cone consisting of the object we'll call $\nu F$, or the greatest fixed point of $F$, with a set of projections $\pi_n$
+The limit of a diagram is defined as a universal cone. In our case this would be the cone consisting of the object we'll call $\nu F$ with a set of projections $\pi_n$
 
 \begin{figure}[H]
 \centering
@@ -569,7 +569,7 @@ tl :: Stream a -> Stream a
 tl (Fix (StreamF _ s)) = s
 \end{haskell}
 
-This is all true in $Set$, but Haskell is not $Set$. I had a discussion with Edward Kmett and he pointed out that Haskell's fixed point data type can be considered the initial algebra as well. Suppose that you have an infinite data structure, like the stream we were just discussing. If you apply a catamorphism for an arbitrary algebra to it, it will most likely never terminate (try summing up an infinite stream of integers). In Haskell, however, this is interpreted as the catamorphism returning the bottom $\bot$, which is a perfectly legitimate value. And once you start including bottoms in your reasoning, all bets are off. In particular \hask{Void} is no longer uninhabited---it contains $\bot$---and the colimit construction of the initial algebra is no longer valid. It's possible that some of the results can be generalized using domain theory and enriched categories, but I'm not aware of any such work.
+This is all true in $Set$, but Haskell is not $Set$. I had a discussion with Edward Kmett and he pointed out that Haskell's fixed point data type can be considered the initial algebra as well. Suppose that you have an infinite data structure, like the stream we were just discussing. If you apply a catamorphism for an arbitrary algebra to it, it will most likely never terminate (try summing up an infinite stream of integers). In Haskell, however, this is interpreted as the catamorphism returning the bottom $\bot$, which is a perfectly legitimate value. And once you start including bottoms in your reasoning, all bets are off. In particular \hask{Void} is no longer uninhabited---it contains $\bot$---and the colimit construction of the initial algebra is no longer valid. It's possible that some of these results can be generalized using domain theory and enriched categories, but I'm not aware of any such work.
 
 \section{Bibliography}
 \begin{itemize}
