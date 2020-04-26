@@ -71,6 +71,7 @@
 \title{Fixed Points of Endofunctors}
 
 \begin{document}
+\maketitle{}
 
 \href{https://github.com/BartoszMilewski/Publications/blob/master/Algebras2.pdf}{Previously}, we've been discussing the construction of initial algebras and terminal coalgebras in terms of colimits and limits. By Lambek's lemma, both constructions lead to fixed points of the functor in question (the least one and the greatest one, respectively). ln this installment we'll dig into alternative definitions of these (co-)algebras, first in Haskell, to build some intuition, and then using (co-)end calculus in category theory.
 
@@ -80,16 +81,16 @@ The initial algebra for a given functor \hask{f} is defined by its universal pro
 \begin{haskell}
 cata :: Functor f => (f a -> a) -> (Mu f -> a)
 \end{haskell}
-or, equivalently
+or, after rearranging the arguments,
 \begin{haskell}
 cata :: Functor f => Mu f -> (f a -> a) -> a
 \end{haskell}
 
-This property can be used in the definition of \hask{Mu f} 
+This universal property can be used in the definition of \hask{Mu f} 
 \begin{haskell}
 newtype Mu f = Mu (forall a. (f a -> a) -> a)
 \end{haskell}
-A value of this type is a polymorphic function. This function, for any type \hask{a} and any function \hask{f a -> a}, will produce a value of type \hask{a}. In other words, it's a gigantic product of all possible catamorphisms. 
+A value of this type is a polymorphic function. This function, for any type \hask{a} and any function \hask{f a -> a}, will produce a value of type \hask{a}. In other words, it's a \emph{gigantic product} of all possible catamorphisms. 
 
 Notice that this definition requires the following language pragma
 \begin{haskell}
@@ -98,17 +99,20 @@ Notice that this definition requires the following language pragma
 
 This is an example of a definition in terms of the \emph{mapping out} property. An object is uniquely defined by the outgoing morphisms to all other objects. This is the consequence of the Yoneda lemma.
 
-It's easy to define a catamorphism in terms of \hask{Mu}, since \hask{Mu} \emph{is a} catamorphism
+It's easy to define a catamorphism in terms of \hask{Mu}
 \begin{haskell}
 cataMu :: Functor f => Algebra f a -> Mu f -> a
 cataMu alg (Mu cata) = cata alg
 \end{haskell}
+This is because \hask{Mu} is a polymorphic catamorphism, and the compiler will automatically instantiate it for the proper type.
 
-The definition of \hask{Mu f} is workable, if a bit unwieldy.  The challenge is to construct terms of type \hask{Mu f}. For instance, let's convert a list of \hask{a} to a term of type \hask{Mu (ListF a)}. As a reminder, the functor \hask{ListF a} is defined as
+The definition of \hask{Mu f} is workable, if a bit unwieldy---the challenge is to construct terms of type \hask{Mu f}. I'll show you how to do it using a list as an example. We'll convert a list of \hask{a} to a term of type \hask{Mu (ListF a)}. 
+
+As a reminder, the functor \hask{ListF a} is defined as
 \begin{haskell}
 data ListF a x = NilF | ConsF a x
 \end{haskell}
-In essence, if we can provide the implementation of all possible folds for a given list, we have defined the list. This is like defining a function by specifying its integrals with all possible test functions (that's how distributions are defined in calculus).
+In essence, if we can provide the implementation of all possible folds for a given list, we have defined the list. This is a little like defining a function by specifying its integrals with all possible test functions (that's how distributions are defined in calculus).
 \begin{haskell}
 fromList :: [a] -> Mu (ListF a)
 fromList as = Mu (\alg -> go alg as)
@@ -140,7 +144,7 @@ We want to define \hask{Nu} as a gigantic product of anamorphisms, one anamorphi
 \begin{haskell}
 forall a. (a -> f a, a) -> Nu f
 \end{haskell}
-We can now apply the standard trick: a function from a sum type is equivalent to a product of functions. Here we have a gigantic product of functions, so we need a gigantic sum. A gigantic sum is known as the existential type. So, symbolically, in pseudo Haskell, we would define \hask{Nu} as
+We can now apply the standard trick: a function from a sum type is equivalent to a product of functions. Here we start with a gigantic product of functions, so we need a gigantic sum. A gigantic sum is known as the existential type. So, symbolically, in pseudo Haskell, we would define \hask{Nu} as
 
 \begin{haskell}
 data Nu f =  Nu (exists a. (a -> f a, a))
@@ -176,7 +180,7 @@ exists a. (a -> f a, a)
  \end{haskell}
 When we are given a value of this type, we have some value of the unknown type \hask{a} on the producer side, and the function \hask{g :: a -> f a} on the consumer side. Since we don't know the type of \hask{a}, all we can do is to apply \hask{g} to it, to obtain the term of the type \hask{f a}. 
 
-Since \hask{f} is a functor, we can now lift \hask{g} and apply it again, to get something of the type \hask{f (f a)}. Continuing this process, we can obtain arbitrary powers of the functor \hask{f} acting on \hask{a}. This is how this definition is equivalent to the recursive data type. In fact, we can write a recursive function that converts \hask{Nu f} to \hask{Fix f}
+Since \hask{f} is a functor, we can lift \hask{g} and apply it again, to get something of the type \hask{f (f a)}. Continuing this process, we can obtain arbitrary powers of the functor \hask{f} acting on \hask{a}. This is how this definition is equivalent to the recursive data type. In fact, we can write a recursive function that converts \hask{Nu f} to \hask{Fix f}
 
 \begin{haskell}
 toFix :: Functor f => Nu f -> Fix f
@@ -184,19 +188,19 @@ toFix (Nu coa a) = ana coa a
   where ana coa = Fix . fmap (ana coa) . coa
 \end{haskell}
 
-An anamorphism in terms of \hask{Nu} is given by
+An anamorphism in terms of \hask{Nu} is simply given by
 \begin{haskell}
 anaNu :: Functor f => Coalgebra f a -> a -> Nu f
 anaNu coa a = Nu coa a
 \end{haskell}
-This literally does nothing, just stores a coalgebra and a seed. But that's how existential types work: they can be instantiated with a single value. The whole logic is in the deconstruction, or the usage of this value. 
+This literally does nothing, just stores a coalgebra and a seed. But that's how existential types work: their construction is easy. The client provides one particular value of one particular type. The whole logic is in the deconstruction, or the usage of this value. 
 
 Let's apply this method to our earlier example of an infinite stream generated by the functor
 \begin{haskell}
 data StreamF a x = StreamF a x
   deriving Functor
 \end{haskell}
-An infinite stream of \hask{a} is the initial algebra for this functor
+An infinite stream of \hask{a} is the terminal coalgebra for this functor
 \begin{haskell}
 type StreamNu a = Nu (StreamF a)
 \end{haskell}
@@ -205,7 +209,7 @@ Here's a coalgebra we used before to generate arithmetic sequences
 coaInt :: Coalgebra (StreamF Int) Int
 coaInt n = StreamF n (n + 1)
 \end{haskell}
-We can use it to generate a stream of natural numbers. We'll express it using \hask{Nu}
+We can use it to generate a stream of natural numbers, but this time we'll express it using \hask{Nu}
 \begin{haskell}
 intStream :: Nu (StreamF Int)
 intStream = Nu coaInt 0
@@ -229,7 +233,7 @@ The fact that we can convert \hask{Nu f}, which is the greatest fixed point of \
 
 \begin{haskell}
 fromFix :: Functor f => Fix f -> Mu f
-fromFix fx = Mu $ flip cata fx
+fromFix fx = Mu (flip cata fx)
 \end{haskell}
 This is only possible at the cost of \hask{cata} occasionally hitting the bottom $\bot$, or never terminating, which is okay in Haskell.
 
@@ -247,9 +251,52 @@ fromNuToMu (Nu coa a) = Mu $ \alg -> hylo alg coa a
   where hylo alg coa = alg . fmap (hylo alg coa) . coa
 \end{haskell}
 
-We know from the previous installment that there is a canonical mapping (an injection) from \hask{Mu f} to \hask{Nu f}. It turns out that \hask{fromNuToMu} is its inverse, proving that, in Haskell, these two fixed points are isomorphic.
+We know from the previous installment that there is a canonical mapping (an injection) from \hask{Mu f} to \hask{Nu f}. 
+
+\begin{figure}[H]
+\begin{tikzpicture}
+         \draw (-1,0)[fill=blue!25!white] ellipse (0.7 and 1);
+         \draw (2,0) ellipse (1.4 and 2);
+         \draw (2,0)[fill=blue!25!white] ellipse (0.7 and 1);
+       	\draw[dashed, blue] (-1, 1) -- (2, 1);
+	\draw[dashed, blue] (-1, -1) -- (2, -1);
+        \node at (-1, 0) { $\mu f$ };
+        \node at (2, 1.5) { $\nu f$ };
+\end{tikzpicture}
+\end{figure}
+
+It turns out that \hask{fromNuToMu} is its inverse, proving that, in Haskell (but \emph{not} in $Set$), these two fixed points are isomorphic.
 
 The fact that, in Haskell, we can map a terminal coalgebra to an initial algebra is the reason why we have hylomorphisms. A hylomorphism uses a coalgebra to build a recursive data structure from a seed, and then applies an algebra to fold it. It applies a catamorphism to the result of an anamorphism, which is only possible because they have the same type in the middle. 
+
+\begin{figure}[H]
+\begin{tikzpicture}
+         \draw (-1.5,0)[fill=blue!25!white] ellipse (0.7 and 1);
+         \draw ( 1.5,0)[fill=blue!25!white] ellipse (0.7 and 1);
+       	\draw[dashed, blue] (-1.5,  1) -- (1.5,  1);
+	\draw[dashed, blue] (-1.5, -1) -- (1.5, -1);
+        \node at (-1.5, 0.4) { $\mu f$ };
+        \node at ( 1.5, 0.4) { $\nu f$ };
+	\draw[<-, red, dashed] (-1.5, -0.3) -- (1.5, -0.3);
+	\draw[<-, red] (-3, -0.3) -- (-1.6, -0.3);
+	\draw[<-, red] ( 1.6, -0.3) -- ( 3.0, -0.3);
+        \node at (-3.2, -0.3) { $b$ };
+        \node at (3.2, -0.3) { $a$ };
+	\draw[<-, blue] (-3.0, -1.8) -- (-1.6, -1.8);
+	\draw[<-, blue] (1.6, -1.8) -- (3.0, -1.8);
+        \node at (-3.2, -1.8) { $b$ };
+        \node at (3.2, -1.8) { $a$ };
+        \node at (-1.3, -1.8) { $f b$ };
+        \node at (1.3, -1.8) { $f a$ };
+        \draw[->, dashed] ( 2.4, -1.8) -- ( 2.4, -0.3);
+        \draw[->, dashed] (-2.4, -1.8) -- (-2.4, -0.3);
+        \node at (-3, -1) { cata };
+        \node at ( 3, -1) { ana };
+        \node at (-2.4, -2.2) { alg };
+        \node at ( 2.4, -2.2) { coa };
+\end{tikzpicture}
+\caption{A hylomorphism (in red), assuming that $\mu f$ is isomorphic to $\nu f$}
+\end{figure}
 
 Here's a quick exercise that was hinted at in the previous installment. This is a tree functor
 \begin{haskell}
@@ -273,7 +320,7 @@ And this is quicksort implemented using functions defined in this section
 \begin{haskell}
 qsort = cataMu combine . fromNuToMu . anaNu split
 \end{haskell}
-This is an example of a hylomorphism. The actual implementation of a hylomorphism in the Haskell library is more efficient, as it fuses the algebra and coalgebra directly
+This is an example of a hylomorphism. The actual implementation of a hylomorphism in the Haskell library is more efficient, as it fuses the the recursive functions
 \begin{haskell}
 hylo :: Functor f => Algebra f a -> Coalgebra f b -> b -> a
 hylo alg coa = alg . fmap (hylo alg coa) . coa
@@ -307,7 +354,7 @@ instance Functor f => Profunctor (P f) where
 
 The Haskell function type from \hask{(f b -> a)} to \hask{b} is represented in category theory as a \emph{power}
 \[b^{ C(f b, a)}\]
-This is because $b$ is an object whereas $C(f b, a)$ is a set. The power is defined by the isomorphism
+We have to use a power because $b$ is an object whereas $C(f b, a)$ is a set. The power is defined by the isomorphism
 \[ C(x, a^s) \cong Set(s, C(x, a)) \]
 The end behaves like a gigantic product in the sense that it defines projections $\pi_a$ for every $a$. In our case, these projections are the catamorphisms
 \[\pi_a \colon \mu f \to a^{C(f a, a)}\]
@@ -315,7 +362,7 @@ Indeed, such a projection is a member of the hom-set
 \[C(\mu f, a^{C(f a, a)})\]
 By the definition of the power, it corresponds to an element of the set
 \[Set(C(f a, a), C(\mu f, a))\]
-which maps algebras (members of $C(f a, a)$) to mappings out of the initial algebra $C(\mu f, a)$. These are catamorphisms.
+which maps algebras, members of $C(f a, a)$, to mappings out of the initial algebra, $C(\mu f, a)$. These are the catamorphisms.
 
 Similarly, we can rewrite \hask{Nu}
 \begin{haskell}
@@ -338,16 +385,22 @@ data Q f a b = Q (a -> f b) b
 instance Functor f => Profunctor (Q f) where
   dimap g g' (Q h b) = Q (fmap g' . h . g) (g' b)
 \end{haskell}
+and the coend is an existential data type defined using a GADT
+\begin{haskell}
+data Coend p where
+  Coend :: p a a -> Coend p
+\end{haskell}
+
 
 A coend behaves like a gigantic sum, in the sense that it defines injections $\iota_a$ for every $a$. In our case, these injections are anamorphisms
 \[ \iota_a \colon C(a, f a) \cdot a \to \nu f\]
 Indeed $\iota_a$ is a member of the hom-set
 \[C(C(a, f a) \cdot a, \nu f)\]
-or, using the definition of the copower, an element of
+or, using the definition of the copower, an element of the set
 \[Set(C(a, f a), C(a, \nu f))\]
 which we recognize as an anamorphism.
 
-\section{Hylomorphism}
+\section{Hylomorphism categorically}
 
 If the mapping from from the terminal coalgebra $\nu$ to the initial algebra $\mu$ exists in a particular category $C$, it is an element of the following hom-set
 
@@ -373,12 +426,18 @@ we get
 \[ \int_{a, b} Set \Big(C(a, f a), Set\big(C(f b, b), C(a, b)\big)\Big)\]
 Finally, applying the currying adjunction in $Set$ we get
 \[ \int_{a, b} Set \Big(C(a, f a) \times C(f b, b), C(a, b)\Big)\]
-which has the form reminiscent of the Haskell hylomorphism
+which has the form reminiscent of the Haskell definition of a hylomorphism
 
 \begin{haskell}
 hylo :: Functor f => Coalgebra f a -> Algebra f b -> a -> b
 hylo coa alg = alg . fmap (hylo coa alg) . coa
 \end{haskell}
+This makes sense in Haskell even though it won't work in Set, because Haskell is okay with non-terminating recursion. 
 
+\section{bibliography}
+\begin{itemize}
+\item Fosco Loregian, \href{https://arxiv.org/abs/1501.02503}{Coend calculus}
+\end{itemize}
 \end{document}
-\maketitle{}
+
+
