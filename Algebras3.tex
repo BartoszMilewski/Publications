@@ -434,9 +434,12 @@ hylo coa alg = alg . fmap (hylo coa alg) . coa
 \end{haskell}
 This makes sense in Haskell even though it won't work in Set, because Haskell is okay with non-terminating recursion. 
 
+I had a discussion with Derek Elkins, who pointed me to the paper by Fokkinga and Meijer, in which they discuss the existence of hylomorphisms in CPOs. 
+
 \section{bibliography}
 \begin{itemize}
 \item Fosco Loregian, \href{https://arxiv.org/abs/1501.02503}{Coend calculus}
+\item Fokkinga, Meijer, \href{https://maartenfokkinga.github.io/utwente/mmf91a.pdf}{Program Calculation Properties of Continuous Algebras}
 \end{itemize}
 \end{document}
 
