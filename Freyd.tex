@@ -67,29 +67,33 @@ One of the tropes of detective movies is the almost miraculous ability to recons
 
 \includegraphics{BladeRunner.jpeg}
 
-With constant improvements in deep learning, we might eventually be getting there. But in category theory, we do this all the time. We recover lost information. The way we do it is based on the basic tenet of category theory: an object is defined by its interactions with the rest of the world. This is the basis of all universal constructions, the Yoneda lemma, Grothendieck fibration, Kan extensions, and practically everything else. 
+With constant improvements in deep learning, we might be eventually getting there. In category theory, though, we do this all the time. We recover lost information. The procedure is based on the basic tenet of category theory: an object is defined by its interactions with the rest of the world. This is the basis of all universal constructions, the Yoneda lemma, Grothendieck fibration, Kan extensions, and practically everything else. 
 
-An iconic example is the construction of the left adjoint to a given functor. 
+An iconic example is the construction of the left adjoint to a given functor, and that's what we are going to study here. 
 
-Consider a functor $R$ from some category $\cat D$ to another category $\cat C$. A functor, in general, loses some data, so it's usually impossible to invert it. I produces a "blurry" image of $\cat C$ inside $\cat D$. Its left adjoint is a functor from $\cat C$ to $\cat D$ that attempts to reconstruct lost information, to the best of its ability. Often the functor $R$ is \emph{forgetful}, which usually means that it purposefully forgets some information. It's left adjoint is then called \emph{free}, because it freely ad-libs the forgotten information. 
+Consider a functor $R$ from some category $\cat D$ to another category $\cat C$. 
+\[R \colon D \to C \]
+A functor, in general, loses some data, so it's usually impossible to invert it. It produces a "blurry" image of $\cat D$ inside $\cat C$. Its left adjoint is a functor from $\cat C$ to $\cat D$ that attempts to reconstruct lost information, to the best of its ability 
+\[ L \colon C \to D\]
+Often the functor $R$ is \emph{forgetful}, which usually means that it purposefully forgets some information. It's left adjoint is then called \emph{free}, because it freely ad-libs the forgotten information. 
 
 
 Of course, this is not always possible, but under certain conditions such left adjoint exists. These conditions are spelled out in the Freyd General Adjoint Functor Theorem. 
 
 To understand them, we have to talk a little about size issues. A lot of interesting categories are large. It means there are so many objects in the category that they don't even form a set. The category of all sets, for instance, is large (there is no set of all sets). It's also possible that morphisms between two objects don't form a set. A category in which objects form a set is called \emph{small}, and a category in which hom-sets are sets is called \emph{locally small}. A lot of complexities in Freyd's theorem are related to size issues, so it's important to precisely spell out all the assumptions.
 
-We assume that the source of the functor $R$, the category $\cat D$, is locally small. It must also be small-complete, that is every small diagram in $\cat D$ must have a limit. (A small diagram is a functor from a small category.) The functor $R$ must preserve all small limits. 
+We assume that the source of the functor $R$, the category $\cat D$, is locally small. It must also be small-complete, that is every small diagram in $\cat D$ must have a limit. (A small diagram is a functor from a small category.) The functor $R$ must be continuous, that is, it must preserve all small limits. 
 
-If it weren't for size issues, this would be enough to guarantee the existence of the left adjoint functor $L$, and we'll sketch the proof for this simplified case. In the general case, there is one more condition, the Solution Set Condition, which we'll discuss later.
+If it weren't for size issues, this would be enough to guarantee the existence of the left adjoint, and we'll sketch the proof for this simplified case. In the general case, there is one more condition, the Solution Set Condition, which we'll discuss later.
 
-Here's the problem we are trying to solve. We have the functor $R$ that maps objects and morphisms from $\cat D$ to $\cat C$. We want to define another functor $L$ that goes in the opposite direction. We're not looking for an inverse, so we're not expecting the composition of this functor with $R$ to be identity, but we want it to be \emph{related} to identity by two natural transformations called unit and counit. Their components are, respectively:
+Here's the problem we are trying to solve. We have the functor $R$ that maps objects and morphisms from $\cat D$ to $\cat C$. We want to define another functor $L$ that goes in the opposite direction. We're not looking for the inverse, so we're not expecting the composition of this functor with $R$ to be identity, but we want it to be \emph{related} to identity by two natural transformations called unit and counit. Their components are, respectively:
 \[ \eta_c : c \to R L c\]
 \[\epsilon_d : L R d \to d \]
 and, as long as they satisfy some additional triangle identities, they will establish the adjunction $L \dashv R$.
 
-To define $L$, lets pick an object $c$ in $\cat C$ and try to propagate it back to $\cat D$. To do that, we have to gather as much information about $c$ as possible. We will then propagate all this information back to $\cat D$ and find an object in $\cat D$ that "looks the same." In a way, we have to create a hologram of $c$ and communicate it back to $\cat D$. All the information about $c$ is encoded in morphisms so, in order to generate our hologram, we'll gather all morphisms that originate in $c$. These morphisms form a category called the coslice category $c/C$. 
+We are going to define $L$ point-wise, so let's pick an object $c$ in $\cat C$ and try to propagate it back to $\cat D$. To do that, we have to gather as much information about $c$ as possible. We will then propagate all this information back to $\cat D$ and find an object in $\cat D$ that "looks the same." In a way, we have to create a hologram of $c$ and communicate it back to $\cat D$. All the information about $c$ is encoded in morphisms so, in order to generate our hologram, we'll gather all morphisms that originate in $c$. These morphisms form a category called the coslice category $c/C$. 
 
-The objects in $c/C$ are pairs $(c', f \colon c \to c')$. These are all the arrows that emanate from $c$, indexed by their target objects $c'$. But what really defines the structure of this category are morphisms between objects. A morphism in $c/C$ from $(c', f)$ to $(c'', g)$ is a morphism $h \colon c' \to c''$ that makes the following triangle commute:
+The objects in $c/C$ are pairs $(x, f \colon c \to x)$. These are all the arrows that emanate from $c$, indexed by their target objects $x$. But what really defines the structure of this category are morphisms between objects. A morphism in $c/C$ from $(x, f)$ to $(y, g)$ is a morphism $h \colon x \to y$ that makes the following triangle commute:
 
 \begin{figure}[H]
 \centering
@@ -97,13 +101,13 @@ The objects in $c/C$ are pairs $(c', f \colon c \to c')$. These are all the arro
   & c
   \arrow[ld, "f"']
   \arrow[rd, "g"]\\
-  c'
+  x
   \arrow[rr, "h"]
-  && c''
+  && y
 \end{tikzcd}
 \end{figure}
 
-We have complete information about $c$ encoded in the slice category, but we have no way to propagate it back to $\cat D$. This is because, in general, the image of $\cat D$ doesn't cover the whole of $\cat C$. Even more importantly, not all morphisms in the image of $\cat D$ have corresponding morphisms in $\cat D$. We have to scale down our expectations, and define a partial hologram that does not capture all the information about $c$, but that can be back-propagated to $\cat D$. Such partial hologram is called a comma category $c/R$.
+We have complete information about $c$ encoded in the slice category, but we have no way to propagate it back to $\cat D$. This is because, in general, the image of $\cat D$ doesn't cover the whole of $\cat C$. Even more importantly, not all morphisms in the image of $\cat D$ have corresponding morphisms in $\cat D$. We have to scale down our expectations, and define a partial hologram that does not capture all the information about $c$, but one which can be back-propagated to $\cat D$. Such partial hologram is called a comma category $c/R$.
 
 The objects of $c/R$ are pairs $(d, f \colon c \to R d)$, where $d$ is an object in $\cat D$. These are all the arrows emanating from $c$ whose target is in the image of $R$. Again, the important structure is encoded in the morphisms of $c/R$. These are the arrows in $\cat D$, $h \colon d \to d'$ that make the following diagram commute in $\cat C$
 
@@ -156,7 +160,7 @@ Notice an interesting fact: we can interpret these triangles as commutation cond
 \end{tikzpicture}
 \end{figure}
 
-We can now take all this information about $c$ that's been encoded in $c/R$ and move it back to $\cat D$. We define a projection functor $\pi_c \colon c/R \to D$ that maps $(d, f)$ to $d$, thus forgetting the morphism $f$. What's important, though, is that it keeps the information encoded in the morphisms of $c/R$, because these are just some morphisms in $\cat D$.
+We can now take all this information about $c$ that's been encoded in $c/R$ and move it back to $\cat D$. We define a projection functor $\pi_c \colon c/R \to D$ that maps $(d, f)$ to $d$, thus forgetting the morphism $f$. What's important, though, is that it keeps the information encoded in the morphisms of $c/R$, because these are just morphisms in $\cat D$.
 
 \begin{figure}[H]
 \begin{tikzpicture}
@@ -199,21 +203,112 @@ We can now take all this information about $c$ that's been encoded in $c/R$ and 
 \end{tikzpicture}
 \end{figure}
 
-The image of $\pi_c$ doesn't necessarily cover the whole of $\cat D$, because not every $R d$ has arrows coming from $c$. Similarly, only the morphisms that make the appropriate triangle in $\cat C$ commute are picked by $\pi_c$. But those objects and morphisms that are in the image of $\pi_c$ form a diagram in $\cat C$. This diagram is our partial hologram and we can use it to pick an object in $\cat D$ that looks exactly like $c$. That object is the limit of this diagram. 
+The image of $\pi_c$ doesn't necessarily cover the whole of $\cat D$, because not every $R d$ has arrows coming from $c$. Similarly, only the morphisms that make the appropriate triangle in $\cat C$ commute are picked by $\pi_c$. But those objects and morphisms that are in the image of $\pi_c$ form a diagram in $\cat C$. This diagram is our partial hologram, and we can use it to pick an object in $\cat D$ that looks exactly like $c$. That object is the limit of this diagram. 
 
-Here's the tricky part: we assumed that $\cat D$ is small-complete, so every small diagram has a limit, but the diagram defined by $\pi_c$ is not necessarily small. Let's ignore this problem for a moment, and proceed with sketching the proof that the mapping that assigns the limit of $\pi_c$ to every $c$ is the functor $L$ that is left adjoint to $R$. 
+Here's the tricky part: we assumed that $\cat D$ was small-complete, so every small diagram had a limit; but the diagram defined by $\pi_c$ is not necessarily small. Let's ignore this problem for a moment, and proceed with sketching a proof. We want to show that the mapping that assigns the limit of $\pi_c$ to every $c$ is the functor $L$ that is left adjoint to $R$. 
 
 Let's see if we can define the unit
 \[ \eta_c : c \to R L c\]
-We have defined $L c$ as the limit of the diagram $\pi_c$. We also assumed that $R$ preserves limits (small limits, really; but let's ignore the size problems for the moment). That means that $R L c$ is the limit of the diagram $R \pi_c$ in $\cat C$. But, as we noticed before, this diagram is exactly the base of the cone with the apex $c$ that was used to define the comma category $c/R$. Since $R L c$ is the limit of this diagram, there is a unique morphism from any other cone to it. In particular there is a morphism from $c$ to it, and that's the morphism we'll chose for $\eta_c$. 
+We have defined $L c$ as the limit of the diagram $\pi_c$. We also assumed that $R$ preserves limits (small limits, really; but we are ignoring size problems for the moment). It means that $R L c$ is the limit of the diagram $R \pi_c$ in $\cat C$. But, as we noticed before, the diagram  $R \pi_c$ is exactly the base of the cone with the apex $c$ that was used to define the comma category $c/R$. Since $R L c$ is the limit of this diagram, there must be a unique morphism from any other cone to it. In particular there is a morphism from $c$ to it, and that's the morphism we'll chose for $\eta_c$. 
 
-The component of the counit is a morphism
+We can also interpret $\eta_c$ as an object of the comma category $c/R$, namely $(Lc, \eta_c \colon c \to R L c)$. In fact, this is an initial object in this category. If you pick any other object $(d, g \colon c \to R d)$, there is a morphism $h \colon L c \to d$, which is just a side of the limiting cone that defines $L c$. It is a morphism in $c/R$ because it makes the following triangle commute:
+
+\begin{figure}[H]
+\centering
+ \begin{tikzcd}
+  c
+  \arrow[d, "\eta_c"']
+  \arrow[rdd, "g"] \\
+  R L c
+  \arrow[rd, "R h"'] \\
+  & R d
+\end{tikzcd}
+\end{figure}
+This is the triangle that makes $\eta_c$ a morphism of cones, the top one with the apex $c$, and the bottom one with the apex $R L c$. One can show that $h$ is a unique such morphism and, therefore, $\eta_c$ is initial.
+
+We can also define a component of the counit as a morphism
 \[\epsilon_d : L R d \to d \]
-We perform the construction starting with $c = R d$. We define the comma category $R d / R$ and use $\pi_{R d}$ to create the diagram whose limit is $L R d$. We pick $\epsilon_d$ to be a side of the limiting cone. We know that $d$ is in the base of the cone, because it's the projection of $(d, id \colon R d \to R d)$. 
+First, we perform our construction starting with $c = R d$. We define the comma category $R d / R$ and use $\pi_{R d}$ to create the diagram whose limit is $L R d$. We pick $\epsilon_d$ to be a side of the limiting cone. We know that $d$ is in the base of the cone, because it's the projection of $(d, id \colon R d \to R d)$. 
 
 To complete this proof, one should show that the unit and counit are natural transformations and that they satisfy triangle identities. 
 
-So what about these pesky size issues? 
+So what about these pesky size issues? It's one thing to demand the existence of all small limits, and a completely different thing to demand the existence of all large limits. Since the comma category may be too large, maybe we can cut it down to size by carefully picking up a (small) set of objects out of all the objects in $\cat D$. We can find an indexing set $I$ and construct a family $d_i$ of objects of $\cat D$ indexed by elements of $I$. It doesn't have to be one family for all---we can pick a different family for every object $c$ for which we are performing our construction. 
+
+Instead of using the whole comma category $c/R$, we'll limit ourselves to a set of arrows $f_i \colon c \to R d_i$. But in a comma category we also had morphisms between arrows. In fact they were the essential carriers of the structure of the comma category. Let's have another look at these morphisms.
+
+\begin{figure}[H]
+\centering
+ \begin{tikzcd}
+  & c
+  \arrow[ld, "f"']
+  \arrow[rd, "g"]\\
+  R d
+  \arrow[rr, "R h"]
+  && R d'
+\end{tikzcd}
+\end{figure}
+
+This commuting condition can be re-interpreted as describing a factorization of $g$ through $f$. It so happens that every such morphism $g$ can be trivially factorized by  picking $d = d'$ and $h = id_d$. But if we restrict the factors $f$ to be members of the family $f_i$ then not every $g \colon c \to d$  (for arbitrary $d$) can be automatically factorized. We have to demand it. We have the following:
+
+\emph{Solution Set Condition}: For every object $c$ there exists a small set $I$ with an $I$-indexed family of objects $d_i$ in $\cat D$ and a family of morphisms $f_i \colon c \to R d_i$, such that every morphism $g \colon c \to R d$ can be factored through one of the $f_i$. That is, there exists a morphism $h \colon d_i \to d$ such that
+\[g = R h \circ f_i \]
+
+\begin{figure}[H]
+\begin{tikzpicture}
+  \def\Xa{-2.0};
+  \def\Xb{2.0};
+  \def\Ytip{1.0};
+  \def\Yo{-1.2};
+  \def\Ym{-0.2};
+  \def\Yb{-2.0};
+         \draw (\Xa, -0.1)[fill=blue!10!white]  ellipse (1.8 and 1.8);
+         \draw (\Xb - 0.2 , -0.1) ellipse (1.8 and 1.8);
+         
+        \filldraw (\Xb, \Ytip) circle (1pt);
+        \node at ( \Xb, \Ytip + 0.3) { $c$ };
+        
+        \filldraw [red] (\Xa - 0.95, \Ym) circle (1pt);
+        \filldraw [red] (\Xa - 0.70, \Ym + 0.1) circle (1pt);
+        \filldraw [red] (\Xa - 0.50, \Ym) circle (1pt);
+        \node [red] at (\Xa - 1.3, \Ym) { $d_i$ };
+	\draw[->] (\Xa - 0.94, \Ym) -- (\Xa - 0.1, \Yo + 0.1);
+        \filldraw (\Xa, \Yo) circle (1pt);
+        \node at ( \Xa, \Yo + 0.3) { $d$ };
+        \node at (\Xa - 0.8, \Ym - 0.5) { $h$ };
+        
+        \filldraw (\Xb, \Yo) circle (1pt);
+        \node at ( \Xb, \Yo - 0.25) { $R d$ };
+	\draw[->, blue, dashed] (\Xa, \Yo) -- (\Xb - 0.1, \Yo);
+	
+	\draw[->] (\Xb, \Ytip) -- (\Xb, \Yo + 0.1);
+        
+        \node at (\Xa, \Yb - 0.2) { $\cat D$ };
+        \node at (\Xb, \Yb - 0.2) { $\cat C$ };
+        \node at (0, \Yo - 0.3) { $R$ };
+
+	
+	\draw[->, red] (\Xb, \Ytip) -- (\Xb - 0.95, \Ym + 0.15);
+        \filldraw [red] (\Xb - 0.95, \Ym) circle (1pt);
+        \node [red] at (\Xb - 1.4, \Ym + 0.1) { $R d_i$ };
+        \node [red] at (\Xb - 0.8, \Ym + 0.9) { $f_i$ };
+        \filldraw [red] (\Xb - 0.70, \Ym + 0.1) circle (1pt);
+        \filldraw [red] (\Xb - 0.50, \Ym) circle (1pt);
+	\draw[->] (\Xb - 0.94, \Ym) -- (\Xb - 0.1, \Yo + 0.1);
+        \node at (\Xb - 0.8, \Ym - 0.5) { $R h$ };
+        \node at (\Xb + 0.3, \Ym + 0.1) { $g$ };
+
+\end{tikzpicture}
+\end{figure}
+
+(There is a shorthand for this statement: All comma categories $c/R$ admit weakly initial families of objects.)
+
+We can now formulate:
+
+\emph{Freyd's Adjoint Functor Theorem}: If $\cat D$ is a locally small and small-complete category, and the functor $R \colon D \to C$ is continuous (small-limit preserving), and it satisfies the solution set condition, then $R$ has a left adjoint.
+
+Here's the sketch of the proof. As before, we define $L c$ point-wise, as the limit of a diagram; but this time it's a small diagram spanned by the objects $d_i$. We still have a, possibly large, comma category $c/R$, and we can use the family of objects $d_i$ to construct a full subcategory of $c/R$. This subcategory has objects $(d_i, f_i \colon c \to R d_i)$ and includes all morphisms from $c/R$ that go between these objects. We can back-propagate these morphisms to $\cat D$ and construct the diagram whose limit will serve as $L c$. 
+
+Unit of the adjunction can be constructed, as before, by mapping $L c$ to $R L c$ and constructing a morphism from $c$ to it. But this time all we can say is that $R L c$ is the limit of the small diagram built around the objects $R d_i$, whereas $c$ is the tip of a large cone built on top of $R d$, for all $d$ in $\cat D$. The rough idea of the proof is that we can use the solution set property to extend the first limit to encompass the large cone and then use universality to pick the unique morphism $\eta_c \colon c \to R L c$. The details of this proof can be found in any category theory text or on \href{https://ncatlab.org/nlab/show/adjoint+functor+theorem}{nLab}. They are usually presented in terms of constructing the initial object in the comma category using the solution set.
 
 \end{document}
 
