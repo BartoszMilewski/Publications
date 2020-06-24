@@ -316,6 +316,13 @@ An even weaker notion is that of a weakly initial set of objects. These are obje
 
 The details of the proof can be found in any category theory text or on \href{https://ncatlab.org/nlab/show/adjoint+functor+theorem}{nLab}. 
 
+As is standard in category theory, the converse problem, finding the right adjoint to a given functor $L$, can be accomplished by reversing all the arrows. We pick an object $d$ in $\cat D$ and form a comma category $L/c$. Its objects are pairs $(c, f \colon L c \to d)$. Its morphisms are those morphism in $\cat C$ that make the obvious triangles in $\cat D$ commute. The same morphisms, along with their endpoints, form a diagram in $\cat C$. We take the colimit of this diagram as the action of the right adjoint functor $R$ on $d$. 
+
+To address size problems, we have define the solution set. This time, it's a family of objects that is weakly terminal in $L/c$. These are pairs $(c_i, f_i \colon L c_i \to d)$ that, among themselves, can factor out any $g \colon L c \to d$
+\[ g = f_i \circ L h \]
+where $h$ is some morphism $h \colon c \to c_i$. The right adjoint is then constructed by forming coproducts of $c_i$ and then using coequalizers to make them terminal. 
+
+What is really interesting is that we could use solution sets to approximate the adjoints.  
 
 
 \end{document}
