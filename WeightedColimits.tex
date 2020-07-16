@@ -28,14 +28,14 @@ A morphism from $(c, x)$ to $(c', x')$ is a morphism  $f \colon c \to c'$ in $C$
 
 There is an obvious projection functor that forgets the second component of the pair
 \[\Pi \colon (c, x) \mapsto x\]
-In general, a Grothendieck fibration starts with a projection functor.
+(In fact, a general Grothendieck fibration starts with a projection functor.)
 
-You will often see the category of elements written using integral notation, since objects of this category form a disjoint union (sum) of sets $F c$
+You will often see the category of elements written using integral notation. An integral, after all, is a gigantic sum of tiny slices. Objects of the category of elements form a gigantic sum (disjoint union) of sets $F c$. This is why you'll see this notation
 \[\int^{c \colon C} F c\]
-but that conflicts with the colimit notation so, following \href{https://arxiv.org/abs/1501.02503}{Fosco Loregian}, I'll use the notation
+but that conflicts with the one for conical colimit so, following \href{https://arxiv.org/abs/1501.02503}{Fosco Loregian}, I'll use the notation
 \[C\int^{c \colon C} F c\]
-An interesting specialization of a category of elements is a comma category. It's the category $d/K$ of arrows originating at a fixed object $d$ and terminating in the image of the functor $K \colon C \to D$. The objects of $d/K$ are pairs $(c, f)$ where $f \colon d \to K c$ is a morphism in $D$. These morphisms are elements of the hom-set $D(d, K c)$, so the comma category is just a category of elements for the functor $D(d, K-) \colon C \to Set$
-\[d/K \cong C\int^{c\colon C} D(d, K c)\]
+An interesting specialization of a category of elements is a comma category. It's the category $K/d$ of arrows originating in the image of the functor $K \colon C \to D$ and terminating at a fixed object $d$. The objects of $K/d$ are pairs $(c, f)$ where $f \colon K c \to d$ is a morphism in $D$. These morphisms are elements of the hom-set $D(K c , d)$, so the comma category is just a category of elements for the functor $D(K-, d) \colon C^{op} \to Set$
+\[K/d \cong C\int^{c\colon C} D(K c, d)\]
 
 You'll mostly see integral notation in the context of ends and coends. A coend of a profunctor is like a trace of a matrix: it's a sum (a coproduct) of diagonal elements. But (co-)end notation may also be used for (co-)limits. Using the trace analogy, if you fill rows of a matrix with copies of the same vector, the trace will be the sum of the components of the vector. Similarly, you can construct a profunctor from a functor by ignoring one of the arguments:
 \[ P(c', c) = F c\]
