@@ -14,36 +14,38 @@
 
 \begin{document}
 
-It's funny how the same ideas pop up in different branches of mathematics. Calculus, for instance, is built around metric spaces (or, more generally, Banach spaces) and measures. A limit of a sequence is defined by points getting closer and closer together. An integral is an area under a curve. In category theory, though, we don't talk about distances or areas (except for Lawvere's take on metric spaces), and yet we have the abstract notion of a \href{https://bartoszmilewski.com/2015/04/15/limits-and-colimits/}{limit}, and we use integral notation for \href{https://bartoszmilewski.com/2017/03/29/ends-and-coends/}{ends}. The similarities are uncanny. This blog post was inspired by me trying to understand the analogy between a coend formula and a multi-dimensional integral. On the one hand we have a coend over a Grothendieck fibration, which is like a two-dimensional category, on the other hand we have a coend over its base category. To understand it, though, I had to get a better handle on weighted colimits which, as it turns out, are even more general than Kan extensions. 
+It's funny how the same ideas pop up in different branches of mathematics. Calculus, for instance, is built around metric spaces (or, more generally, Banach spaces) and measures. A limit of a sequence is defined by points getting closer and closer together. An integral is an area under a curve. In category theory, though, we don't talk about distances or areas (except for Lawvere's take on metric spaces), and yet we have the abstract notion of a \href{https://bartoszmilewski.com/2015/04/15/limits-and-colimits/}{limit}, and we use integral notation for \href{https://bartoszmilewski.com/2017/03/29/ends-and-coends/}{ends}. The similarities are uncanny. 
+
+This blog post was inspired by my trying to understand the idea behind the Freyd's adjoint functor theorem. It can be expressed as a colimit over a comma category, which is a special case of the Grothendieck fibration, being reduced to a coend over its base category. To understand it, though, I had to get a better handle on weighted colimits which, as I learned, were even more general than Kan extensions. 
 
 \section{Category of elements as coend}
 
 \href{https://bartoszmilewski.com/2019/10/09/fibrations-cleavages-and-lenses/}{Grothendieck fibration} is like splitting a category in two orthogonal directions, the base and the fiber. Fiber may vary from object to object (as in dependent types, which are indeed modeled as fibrations). 
 
-The simplest example of a Grothendieck fibration is the category of elements, in which fibers are simply sets. Of course, a set is also a category: a discrete category with no morphisms between elements (except for compulsory identity morphisms). A category of elements is built from a category $C$ using a functor
-\[F \colon C \to Set\]
-Such a functor is traditionally called a copresheaf (this construction works also for presheaves, $C^{op} \to Set$). Objects in the category of elements are pairs $(c, x)$ where $c$ is an object in $C$, and $x \in F c$ is a set element. 
+The simplest example of a Grothendieck fibration is the category of elements, in which fibers are simply sets. Of course, a set is also a category---a discrete category with no morphisms between elements, except for compulsory identity morphisms. A category of elements is built on top of a category $\mathcal{C}$ using a functor
+\[F \colon \mathcal{C} \to Set\]
+Such a functor is traditionally called a copresheaf (this construction works also on presheaves, $\mathcal{C}^{op} \to Set$). Objects in the category of elements are pairs $(c, x)$ where $c$ is an object in $\mathcal{C}$, and $x \in F c$ is an element of a set. 
 
-A morphism from $(c, x)$ to $(c', x')$ is a morphism  $f \colon c \to c'$ in $C$, such that $(F f) x = x'$.
+A morphism from $(c, x)$ to $(c', x')$ is a morphism  $f \colon c \to c'$ in $\mathcal{C}$, such that $(F f) x = x'$.
 
 There is an obvious projection functor that forgets the second component of the pair
-\[\Pi \colon (c, x) \mapsto x\]
+\[\Pi \colon (c, x) \mapsto c\]
 (In fact, a general Grothendieck fibration starts with a projection functor.)
 
 You will often see the category of elements written using integral notation. An integral, after all, is a gigantic sum of tiny slices. Objects of the category of elements form a gigantic sum (disjoint union) of sets $F c$. This is why you'll see this notation
-\[\int^{c \colon C} F c\]
-but that conflicts with the one for conical colimit so, following \href{https://arxiv.org/abs/1501.02503}{Fosco Loregian}, I'll use the notation
-\[C\int^{c \colon C} F c\]
-An interesting specialization of a category of elements is a comma category. It's the category $K/d$ of arrows originating in the image of the functor $K \colon C \to D$ and terminating at a fixed object $d$. The objects of $K/d$ are pairs $(c, f)$ where $f \colon K c \to d$ is a morphism in $D$. These morphisms are elements of the hom-set $D(K c , d)$, so the comma category is just a category of elements for the functor $D(K-, d) \colon C^{op} \to Set$
-\[K/d \cong C\int^{c\colon C} D(K c, d)\]
+\[\int^{c \colon \mathcal{C}} F c\]
+However, this notation conflicts with the one for conical colimits so, following \href{https://arxiv.org/abs/1501.02503}{Fosco Loregian}, I'll write the category of elements as
+\[\mathcal{C}\int^{c} F c\]
+An interesting specialization of a category of elements is a comma category. It's the category $L/e$ of arrows originating in the image of the functor $L \colon \mathcal{C} \to \mathcal{E}$ and terminating at a fixed object $e$. The objects of $L/e$ are pairs $(c, f)$ where $c$ is an object in $\mathcal{C}$ and $f \colon L c \to e$ is a morphism in $\mathcal{E}$. These morphisms are elements of the hom-set $\mathcal{E}(L c , e)$, so the comma category is just a category of elements for the functor $\mathcal{E}(L-, e) \colon \mathcal{C}^{op} \to Set$
+\[L/e \cong \mathcal{C}\int^{c} \mathcal{E}(L c, e)\]
 
-You'll mostly see integral notation in the context of ends and coends. A coend of a profunctor is like a trace of a matrix: it's a sum (a coproduct) of diagonal elements. But (co-)end notation may also be used for (co-)limits. Using the trace analogy, if you fill rows of a matrix with copies of the same vector, the trace will be the sum of the components of the vector. Similarly, you can construct a profunctor from a functor by ignoring one of the arguments:
+You'll mostly see integral notation in the context of ends and coends. A coend of a profunctor is like a trace of a matrix: it's a sum (a coproduct) of diagonal elements. But (co-)end notation may also be used for (co-)limits. Using the trace analogy, if you fill rows of a matrix with copies of the same vector, the trace will be the sum of the components of the vector. Similarly, you can construct a profunctor from a functor by repeating the same functor for every value of the first argument $c'$:
 \[ P(c', c) = F c\]
 The coend over this profunctor is the colimit of the functor, a colimit being a generalization of the sum. By slight abuse of notation we write it as
-\[ \mbox{colim} F = \int^{c \colon C} F c \]
+\[ \mbox{colim}\, F = \int^{c \colon \mathcal{C}} F c \]
 This kind of colimit is called \emph{conical}, as opposed to what we are going to discuss next.
 \section{Weighted colimit as coend}
-A colimit is a universal cocone under a diagram. A diagram is a selection of objects and morphisms in $C$ given by a functor $D \colon J \to C$ from some indexing category $J$. The legs of a cocone are a selection of morphisms that connect the vertices of the diagram to the apex $c$ of the cocone. 
+A colimit is a universal cocone under a diagram. A diagram is a selection of objects and morphisms in $\mathcal{C}$ given by a functor $D \colon \mathcal{J} \to \mathcal{C}$ from some indexing category $\mathcal{J}$. The legs of a cocone are a selection of morphisms that connect the vertices of the diagram to the apex $c$ of the cocone. 
 
 \begin{figure}[H]
  \begin{tikzcd}
@@ -59,46 +61,57 @@ A colimit is a universal cocone under a diagram. A diagram is a selection of obj
   & c
 \end{tikzcd}
 \end{figure}
-For any given indexing object $j \colon J$, we select an element of the hom-set $C(D j, c)$, as a \emph{wire} of the cocone. This is a selection of an element of a set (the hom-set) and, as such, can be described by a function from the singleton set $*$. In other words, the wire is a member of $Set(*, C(D j, c))$. In fact, we can describe the whole cocone as a natural transformation between two functors, one of them being the constant functor $1 \colon j \mapsto *$. The set of cocones is the set of natural transformations:
-\[ [J^{op}, Set](1, C(D -, c))\]
-Here, $[J^{op}, Set]$ is the category of presheaves, that is functors from $J^{op}$ to $Set$, with natural transformations as morphisms. As a bonus, we get the cocone triangle commuting conditions from naturality. 
+For any given indexing object $j \colon \mathcal{J}$, we select an element of the hom-set $\mathcal{C}(D j, c)$, as a \emph{wire} of the cocone. This is a selection of an element of a set (the hom-set) and, as such, can be described by a function from the singleton set $*$. In other words, the wire is a member of $Set(*, \mathcal{C}(D j, c))$. In fact, we can describe the whole cocone as a natural transformation between two functors, one of them being the constant functor $1 \colon j \mapsto *$. The set of cocones is the set of natural transformations:
+\[ [\mathcal{J}^{op}, Set](1, \mathcal{C}(D -, c))\]
+Here, $[J^{op}, Set]$ is the category of presheaves, that is functors from $\mathcal{J}^{op}$ to $Set$, with natural transformations as morphisms. As a bonus, we get the cocone triangle commuting conditions from naturality. 
 
-Using singletons to pick morphisms doesn't generalize very well to enriched categories. Here, we are building cocones from zero-thickness wires. What we need instead is what \href{http://www.tac.mta.ca/tac/reprints/articles/10/tr10.pdf}{Max Kelly} calls \emph{cylinders} obtained by replacing the constant functor $1\colon J^{op} \to Set$ with a more general functor $W \colon J^{op} \to Set$. The result is a \emph{weighted} colimit (or an indexed colimit, as Kelly calls it), $\mbox{colim}^W D$. The set of weighted cocones is defined by natural transformations
-\[ [J^{op}, Set](W, C(D -, c))\]
+Using singletons to pick morphisms doesn't generalize very well to enriched categories. Here, we are building cocones from zero-thickness wires. What we need instead is what \href{http://www.tac.mta.ca/tac/reprints/articles/10/tr10.pdf}{Max Kelly} calls \emph{cylinders} obtained by replacing the constant functor $1\colon \mathcal{J}^{op} \to Set$ with a more general functor $W \colon \mathcal{J}^{op} \to Set$. The result is a \emph{weighted} colimit (or an indexed colimit, as Kelly calls it), $\mbox{colim}^W D$. The set of weighted cocones is defined by natural transformations
+\[ [\mathcal{J}^{op}, Set](W, \mathcal{C}(D -, c))\]
 and the weighted colimit is the universal one of these. This definition generalizes nicely to the enriched setting (which I won't be discussing here). 
 
 Universality can be expressed as a natural isomorphism
-\[[J^{op}, Set](W, C(D -, c))  \cong  C(\mbox{colim}^W D, c)\]
+\[[\mathcal{J}^{op}, Set](W, \mathcal{C}(D -, c))  \cong  \mathcal{C}(\mbox{colim}^W D, c)\]
 We interpret this formula as a one-to-one correspondence: for every weighted cocone with the apex $c$ there is a unique morphism from the colimit to $c$. Naturality conditions guarantee that the appropriate triangles commute.
 
 A weighted colimit can be expressed as a coend
-\[\mbox{colim}^W D \cong \int^{j \colon J} W j \cdot D j\]
+\[\mbox{colim}^W D \cong \int^{j \colon \mathcal{J}} W j \cdot D j\]
 The dot here stands for the tensor product of a set by an object. It's defined by the formula
-\[C(s \cdot c, c') \cong Set(s, C(c, c'))\]
+\[\mathcal{C}(s \cdot c, c') \cong Set(s, \mathcal{C}(c, c'))\]
 If you think of $s \cdot c$ as the sum of $s$ copies of the object $c$, then the above asserts that the set of functions from a sum (coproduct) is equivalent to a product of functions, one per element of the set $s$,
 \[(\coprod_s c) \to c' \cong \prod_s (c \to c')\]
  
 The derivation of the coend formula follows the standard coend-fu and the Yoneda lemma:
 \begin{align*}
-C(\mbox{colim}^W D, c) & \cong [J^{op}, Set]\big(W-, C(D -, c)\big) \\
- &\cong \int_j Set \big(W j, C(D j, c)\big) \\
- &\cong \int_j C(W j \cdot D j, c) \\
- &\cong C(\int^j W j \cdot D j, c)
+\mathcal{C}(\mbox{colim}^W D, c) & \cong [\mathcal{J}^{op}, Set]\big(W-, \mathcal{C}(D -, c)\big) \\
+ &\cong \int_j Set \big(W j, \mathcal{C}(D j, c)\big) \\
+ &\cong \int_j \mathcal{C}(W j \cdot D j, c) \\
+ &\cong \mathcal{C}(\int^j W j \cdot D j, c)
 \end{align*}
 
 \section{Two dimensional integral as a coend}
 
-A fibration is like a two-dimensional category. Or, if you're familiar with bundles, it's like a fiber bundle, which is locally isomorphic to a cartesian product of two spaces, the base and the fiber. In particular, the category of elements $J \int W$ is, roughly speaking, like a bundle whose base is the category $J$, and the fiber is a ($j$-dependent) set $W j$. 
+A fibration is like a two-dimensional category. Or, if you're familiar with bundles, it's like a fiber bundle, which is locally isomorphic to a cartesian product of two spaces, the base and the fiber. In particular, the category of elements $\mathcal{J} \int W$ is, roughly speaking, like a bundle whose base is the category $\mathcal{J}$, and the fiber is a ($j$-dependent) set $W j$. 
 
-Given a functor $D \colon J \to Set$, we can define a functor on the category of elements $J \int W$ that ignores the $W j$ component ($\Pi$ is the forgetful projection) 
+Given a functor $D \colon \mathcal{J} \to Set$, we can define a functor on the category of elements $\mathcal{J} \int W$ that ignores the $W j$ component ($\Pi$ is the forgetful projection) 
 \[D \circ \Pi \colon (j, x) \mapsto D j\]
 The coend of this functor is equivalent to the following colimit
-\[\int^{(j, x) \colon J\int W} (D \circ \Pi) (j, x) \cong \underset{J \int W}{\mbox{colim}} \; D \circ \Pi  \]
+\[\int^{(j, x) \colon \mathcal{J}\int W} (D \circ \Pi) (j, x) \cong \underset{\mathcal{J} \int W}{\mbox{colim}} \; D \circ \Pi  \]
 But this functor is constant along the fiber, so we can integrate over it. Since fibers depends on $j$, different values of $D j$ end up weighted differently. The result is an integral (coend) over the base, with values of $D j$ weighted by sets $W j$
-\[\int^{(j, x) \colon J\int W} (D \circ \Pi) (j, x) \cong \int^{(j, x) \colon J\int W} D j  \cong   \int^{j \colon J} W j \cdot D j\]
+\[\int^{(j, x) \colon \mathcal{J}\int W} (D \circ \Pi) (j, x) \cong \int^{(j, x) \colon \mathcal{J}\int W} D j  \cong   \int^{j \colon \mathcal{J}} W j \cdot D j\]
 Using a more traditional notation, this is the formula that relates a (conical) colimit over the category of elements and a weighted colimit.
-\[\underset{J \int W}{\mbox{colim}} \; D \circ \Pi  \cong \mbox{colim}^W D\]
-
-
+\[\underset{\mathcal{J} \int W}{\mbox{colim}} \; D \circ \Pi  \cong \mbox{colim}^W D\]
+There is a category of elements that is of special interest to us, the comma category, where the weight functor is the hom-functor $\mathcal{E}(L-, e)$
+\[L/e \cong \mathcal{C}\int^{c} \mathcal{E}(L c, e)\]
+If we plug it into our formula, we get
+\[\underset{L/e}{\mbox{colim}} \; D \circ \Pi  \cong \underset{C \int \mathcal{E}(L-, e)}{\mbox{colim}} \; D \circ \Pi  \cong \int^{c \colon \mathcal{C}} \mathcal{E}(L c, e) \cdot D c\]
+If the functor $L$ has a right adjoint
+\[\mathcal{E}(L c, e) \cong \mathcal{C}(c, R e)\]
+we can rewrite this formula as
+\[\underset{L/e}{\mbox{colim}} \; D \circ \Pi  \cong \int^{c \colon \mathcal{C}} \mathcal{C}(c, R e) \cdot D c\]
+and use the ninja Yoneda lemma to get
+\[\underset{L/e}{\mbox{colim}} \; D \circ \Pi  \cong D( R e)\]
+In particular, for $D = Id$, we get a formula for the right adjoint in terms of a colimit of a comma category
+\[\underset{L/e}{\mbox{colim}} \; \Pi  \cong R e\]
+We'll come back to this formula when discussing the Freyd's adjoint functor theorem.
 
 \end{document}
