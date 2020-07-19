@@ -12,11 +12,15 @@
   citecolor=blue,
   urlcolor=blue}
 
+\author{Bartosz Milewski}
+\title{Weighted Colimits}
+
 \begin{document}
+\maketitle{}
 
-It's funny how the same ideas pop up in different branches of mathematics. Calculus, for instance, is built around metric spaces (or, more generally, Banach spaces) and measures. A limit of a sequence is defined by points getting closer and closer together. An integral is an area under a curve. In category theory, though, we don't talk about distances or areas (except for Lawvere's take on metric spaces), and yet we have the abstract notion of a \href{https://bartoszmilewski.com/2015/04/15/limits-and-colimits/}{limit}, and we use integral notation for \href{https://bartoszmilewski.com/2017/03/29/ends-and-coends/}{ends}. The similarities are uncanny. 
+It's funny how similar ideas pop up in different branches of mathematics. Calculus, for instance, is built around metric spaces (or, more generally, Banach spaces) and measures. A limit of a sequence is defined by points getting closer and closer together. An integral is an area under a curve. In category theory, though, we don't talk about distances or areas (except for Lawvere's take on metric spaces), and yet we have the abstract notion of a \href{https://bartoszmilewski.com/2015/04/15/limits-and-colimits/}{limit}, and we use integral notation for \href{https://bartoszmilewski.com/2017/03/29/ends-and-coends/}{ends}. The similarities are uncanny. 
 
-This blog post was inspired by my trying to understand the idea behind the Freyd's adjoint functor theorem. It can be expressed as a colimit over a comma category, which is a special case of the Grothendieck fibration, being reduced to a coend over its base category. To understand it, though, I had to get a better handle on weighted colimits which, as I learned, were even more general than Kan extensions. 
+This blog post was inspired by my trying to understand the idea behind the Freyd's adjoint functor theorem. It can be expressed as a colimit over a comma category, which is a special case of the Grothendieck fibration, or a coend over its base category. To understand it, though, I had to get a better handle on weighted colimits which, as I learned, were even more general than Kan extensions. 
 
 \section{Category of elements as coend}
 
@@ -36,8 +40,8 @@ You will often see the category of elements written using integral notation. An 
 \[\int^{c \colon \mathcal{C}} F c\]
 However, this notation conflicts with the one for conical colimits so, following \href{https://arxiv.org/abs/1501.02503}{Fosco Loregian}, I'll write the category of elements as
 \[\mathcal{C}\int^{c} F c\]
-An interesting specialization of a category of elements is a comma category. It's the category $L/e$ of arrows originating in the image of the functor $L \colon \mathcal{C} \to \mathcal{E}$ and terminating at a fixed object $e$. The objects of $L/e$ are pairs $(c, f)$ where $c$ is an object in $\mathcal{C}$ and $f \colon L c \to e$ is a morphism in $\mathcal{E}$. These morphisms are elements of the hom-set $\mathcal{E}(L c , e)$, so the comma category is just a category of elements for the functor $\mathcal{E}(L-, e) \colon \mathcal{C}^{op} \to Set$
-\[L/e \cong \mathcal{C}\int^{c} \mathcal{E}(L c, e)\]
+An interesting specialization of a category of elements is a comma category. It's the category $L/d$ of arrows originating in the image of the functor $L \colon \mathcal{C} \to \mathcal{D}$ and terminating at a fixed object $d$ in $\mathcal{D}$. The objects of $L/d$ are pairs $(c, f)$ where $c$ is an object in $\mathcal{C}$ and $f \colon L c \to d$ is a morphism in $\mathcal{D}$. These morphisms are elements of the hom-set $\mathcal{D}(L c , d)$, so the comma category is just a category of elements for the functor $\mathcal{D}(L-, d) \colon \mathcal{C}^{op} \to Set$
+\[L/d \cong \mathcal{C}\int^{c} \mathcal{D}(L c, d)\]
 
 You'll mostly see integral notation in the context of ends and coends. A coend of a profunctor is like a trace of a matrix: it's a sum (a coproduct) of diagonal elements. But (co-)end notation may also be used for (co-)limits. Using the trace analogy, if you fill rows of a matrix with copies of the same vector, the trace will be the sum of the components of the vector. Similarly, you can construct a profunctor from a functor by repeating the same functor for every value of the first argument $c'$:
 \[ P(c', c) = F c\]
@@ -73,45 +77,64 @@ Universality can be expressed as a natural isomorphism
 \[[\mathcal{J}^{op}, Set](W, \mathcal{C}(D -, c))  \cong  \mathcal{C}(\mbox{colim}^W D, c)\]
 We interpret this formula as a one-to-one correspondence: for every weighted cocone with the apex $c$ there is a unique morphism from the colimit to $c$. Naturality conditions guarantee that the appropriate triangles commute.
 
-A weighted colimit can be expressed as a coend
+A weighted colimit can be expressed as a coend (see Appendix 1)
 \[\mbox{colim}^W D \cong \int^{j \colon \mathcal{J}} W j \cdot D j\]
 The dot here stands for the tensor product of a set by an object. It's defined by the formula
 \[\mathcal{C}(s \cdot c, c') \cong Set(s, \mathcal{C}(c, c'))\]
 If you think of $s \cdot c$ as the sum of $s$ copies of the object $c$, then the above asserts that the set of functions from a sum (coproduct) is equivalent to a product of functions, one per element of the set $s$,
 \[(\coprod_s c) \to c' \cong \prod_s (c \to c')\]
  
-The derivation of the coend formula follows the standard coend-fu and the Yoneda lemma:
+\section{Right adjoint as a colimit}
+
+A fibration is like a two-dimensional category. Or, if you're familiar with bundles, it's like a fiber bundle, which is locally isomorphic to a cartesian product of two spaces, the base and the fiber. In particular, the category of elements $\mathcal{C} \int W$ is, roughly speaking, like a bundle whose base is the category $\mathcal{C}$, and the fiber is a ($c$-dependent) set $W c$. 
+
+We also have a projection functor on the category of elements $\mathcal{C} \int W$ that ignores the $W c$ component
+\[\Pi \colon (c, x) \mapsto c\] 
+The coend of this functor can be written as the following colimit
+\[\int^{(c, x) \colon \mathcal{C}\int W} \Pi (c, x) \cong \underset{\mathcal{C} \int W}{\mbox{colim}} \; \Pi  \]
+But this functor is constant along the fiber, so we can ``integrate over it.'' Since fibers depends on $c$, different objects end up weighted differently. The result is an integral (coend) over the base category, with objects $c$ weighted by sets $W c$
+\[\int^{(c, x) \colon \mathcal{C}\int W} \Pi (c, x) \cong \int^{(c, x) \colon \mathcal{C}\int W} c  \cong   \int^{c \colon \mathcal{C}} W c \cdot c\]
+Using a more traditional notation, this is the formula that relates a (conical) colimit over the category of elements and a weighted colimit of the identity functor
+\[\underset{\mathcal{C} \int W}{\mbox{colim}} \;  \Pi  \cong \mbox{colim}^W Id\]
+
+There is a category of elements that is of special interest to us, the comma category for the functor $L \colon \mathcal{C} \to \mathcal{D}$, in which the weight functor is the hom-functor $\mathcal{D}(L-, d)$
+\[L/d \cong \mathcal{C}\int^{c} \mathcal{D}(L c, d)\]
+If we plug it into the last formula, we get
+\[\underset{L/d}{\mbox{colim}} \;  \Pi  \cong \underset{C \int \mathcal{D}(L-, d)}{\mbox{colim}} \;  \Pi  \cong \int^{c \colon \mathcal{C}} \mathcal{D}(L c, d) \cdot c\]
+If the functor $L$ has a right adjoint
+\[\mathcal{D}(L c, d) \cong \mathcal{C}(c, R d)\]
+we can rewrite this as
+\[\underset{L/d}{\mbox{colim}} \;  \Pi  \cong \int^{c \colon \mathcal{C}} \mathcal{C}(c, R d) \cdot c\]
+and use the ninja Yoneda lemma (see Appendix 2) to get a formula for the right adjoint in terms of a colimit of a comma category
+\[\underset{L/d}{\mbox{colim}} \; \Pi  \cong R d\]
+Incidentally, this is the left \href{https://bartoszmilewski.com/2017/04/17/kan-extensions/}{Kan extension} of the identity functor along $L$. (In fact, it can be used to define the right adjoint as long as it preserves the functor $L$.)
+
+We'll come back to this formula when discussing the Freyd's adjoint functor theorem.
+
+\section{Appendix 1}
+I'm going to prove the following identity using some of the standard tricks of coend calculus
+\[\mbox{colim}^W D \cong \int^{j \colon \mathcal{J}} W j \cdot D j\]
+To show that two objects are isomorphic, it's enough to show that their hom-sets to any object $c$ are isomorphic (this follows from the Yoneda lemma) 
+
 \begin{align*}
 \mathcal{C}(\mbox{colim}^W D, c) & \cong [\mathcal{J}^{op}, Set]\big(W-, \mathcal{C}(D -, c)\big) \\
  &\cong \int_j Set \big(W j, \mathcal{C}(D j, c)\big) \\
  &\cong \int_j \mathcal{C}(W j \cdot D j, c) \\
  &\cong \mathcal{C}(\int^j W j \cdot D j, c)
 \end{align*}
+I first rewrote the set of natural transformations as an end, used the definition of the tensor product of a set and an object, and replaced an end of a hom-set by a hom-set of a coend (continuity of the hom-set functor).
 
-\section{Two dimensional integral as a coend}
-
-A fibration is like a two-dimensional category. Or, if you're familiar with bundles, it's like a fiber bundle, which is locally isomorphic to a cartesian product of two spaces, the base and the fiber. In particular, the category of elements $\mathcal{J} \int W$ is, roughly speaking, like a bundle whose base is the category $\mathcal{J}$, and the fiber is a ($j$-dependent) set $W j$. 
-
-Given a functor $D \colon \mathcal{J} \to Set$, we can define a functor on the category of elements $\mathcal{J} \int W$ that ignores the $W j$ component ($\Pi$ is the forgetful projection) 
-\[D \circ \Pi \colon (j, x) \mapsto D j\]
-The coend of this functor is equivalent to the following colimit
-\[\int^{(j, x) \colon \mathcal{J}\int W} (D \circ \Pi) (j, x) \cong \underset{\mathcal{J} \int W}{\mbox{colim}} \; D \circ \Pi  \]
-But this functor is constant along the fiber, so we can integrate over it. Since fibers depends on $j$, different values of $D j$ end up weighted differently. The result is an integral (coend) over the base, with values of $D j$ weighted by sets $W j$
-\[\int^{(j, x) \colon \mathcal{J}\int W} (D \circ \Pi) (j, x) \cong \int^{(j, x) \colon \mathcal{J}\int W} D j  \cong   \int^{j \colon \mathcal{J}} W j \cdot D j\]
-Using a more traditional notation, this is the formula that relates a (conical) colimit over the category of elements and a weighted colimit.
-\[\underset{\mathcal{J} \int W}{\mbox{colim}} \; D \circ \Pi  \cong \mbox{colim}^W D\]
-There is a category of elements that is of special interest to us, the comma category, where the weight functor is the hom-functor $\mathcal{E}(L-, e)$
-\[L/e \cong \mathcal{C}\int^{c} \mathcal{E}(L c, e)\]
-If we plug it into our formula, we get
-\[\underset{L/e}{\mbox{colim}} \; D \circ \Pi  \cong \underset{C \int \mathcal{E}(L-, e)}{\mbox{colim}} \; D \circ \Pi  \cong \int^{c \colon \mathcal{C}} \mathcal{E}(L c, e) \cdot D c\]
-If the functor $L$ has a right adjoint
-\[\mathcal{E}(L c, e) \cong \mathcal{C}(c, R e)\]
-we can rewrite this formula as
-\[\underset{L/e}{\mbox{colim}} \; D \circ \Pi  \cong \int^{c \colon \mathcal{C}} \mathcal{C}(c, R e) \cdot D c\]
-and use the ninja Yoneda lemma to get
-\[\underset{L/e}{\mbox{colim}} \; D \circ \Pi  \cong D( R e)\]
-In particular, for $D = Id$, we get a formula for the right adjoint in terms of a colimit of a comma category
-\[\underset{L/e}{\mbox{colim}} \; \Pi  \cong R e\]
-We'll come back to this formula when discussing the Freyd's adjoint functor theorem.
+\section{Appendix 2}
+The proof of
+\[ \int^{c \colon \mathcal{C}} \mathcal{C}(c, R d) \cdot c \cong R d\]
+follows the same pattern
+\begin{align*}
+&\mathcal{C}\Big( \big(\int^{c} \mathcal{C}(c, R d) \cdot c\big) , c'\Big)\\
+\cong &\int_c \mathcal{C}\big( \mathcal{C}(c, R d) \cdot c , c'\big) \\
+\cong &\int_c Set\big( \mathcal{C}(c, R d) , \mathcal{C}(c, c')\big) \\
+\cong & \; \mathcal{C}(R d, c') 
+\end{align*}
+I used the fact that a hom-set from a coend is isomorphic to an end of hom-sets (continuity of hom-sets). Then I applied the definition of a tensor. Finally, used the Yoneda lemma for contravariant functors, in which the set of natural transformations is written as an end. 
+\[ [ \mathcal{C}^{op}, Set]\big(\mathcal{C}(-, x), H \big) \cong \int_c Set \big( \mathcal{C}(c, x), H c \big) \cong H x\]
 
 \end{document}
