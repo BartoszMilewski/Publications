@@ -115,25 +115,28 @@ We'll come back to this formula when discussing the Freyd's adjoint functor theo
 I'm going to prove the following identity using some of the standard tricks of coend calculus
 \[\mbox{colim}^W D \cong \int^{j \colon \mathcal{J}} W j \cdot D j\]
 To show that two objects are isomorphic, it's enough to show that their hom-sets to any object $c'$ are isomorphic (this follows from the Yoneda lemma) 
-
-\begin{align*}
+\[
+\begin{aligned}
 \mathcal{C}(\mbox{colim}^W D, c') & \cong [\mathcal{J}^{op}, Set]\big(W-, \mathcal{C}(D -, c')\big) \\
  &\cong \int_j Set \big(W j, \mathcal{C}(D j, c')\big) \\
  &\cong \int_j \mathcal{C}(W j \cdot D j, c') \\
  &\cong \mathcal{C}(\int^j W j \cdot D j, c')
-\end{align*}
-I first rewrote the set of natural transformations as an end, used the definition of the tensor product of a set and an object, and replaced an end of a hom-set by a hom-set of a coend (continuity of the hom-set functor).
+\end{aligned} 
+\]
+I first used the universal property of the colimit, then rewrote the set of natural transformations as an end, used the definition of the tensor product of a set and an object, and replaced an end of a hom-set by a hom-set of a coend (continuity of the hom-set functor).
 
 \section{Appendix 2}
 The proof of
 \[ \int^{c \colon \mathcal{C}} \mathcal{C}(c, R d) \cdot c \cong R d\]
 follows the same pattern
-\begin{align*}
+\[
+\begin{aligned}
 &\mathcal{C}\Big( \big(\int^{c} \mathcal{C}(c, R d) \cdot c\big) , c'\Big)\\
 \cong &\int_c \mathcal{C}\big( \mathcal{C}(c, R d) \cdot c , c'\big) \\
 \cong &\int_c Set\big( \mathcal{C}(c, R d) , \mathcal{C}(c, c')\big) \\
 \cong & \; \mathcal{C}(R d, c') 
-\end{align*}
+\end{aligned}
+\]
 I used the fact that a hom-set from a coend is isomorphic to an end of a hom-set (continuity of hom-sets). Then I applied the definition of a tensor. Finally, I used the Yoneda lemma for contravariant functors, in which the set of natural transformations is written as an end. 
 \[ [ \mathcal{C}^{op}, Set]\big(\mathcal{C}(-, x), H \big) \cong \int_c Set \big( \mathcal{C}(c, x), H c \big) \cong H x\]
 
