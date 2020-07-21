@@ -74,16 +74,22 @@ With constant improvements in deep learning, we might eventually get there. In c
 
 An iconic example is the construction of the left adjoint to a given functor, and that's what we are going to study here. But first let me explain why I decided to pick this subject, and how it's related to programming. I wanted to write a blog post about CPS (continuation passing style) and defunctionalization, and I stumbled upon an article in \href{https://ncatlab.org/nlab/show/defunctionalization}{nLab} that related defunctionalization to Freyd's Adjoint Functor Theorem; in particular to the Solution Set Condition. Such an unexpected connection peaked my interest and I decided to dig deeper into it.
 
+\section{Adjunctions}
+
 Consider a functor $R$ from some category $\mathcal D$ to another category $\mathcal C$. 
 \[R \colon D \to C \]
 A functor, in general, loses some data, so it's normally impossible to invert it. It produces a "blurry" image of $\mathcal D$ inside $\mathcal C$. Its left adjoint is a functor from $\mathcal C$ to $\mathcal D$ 
 \[ L \colon C \to D\]
-that attempts to reconstruct lost information, to the best of its ability. Often the functor $R$ is \emph{forgetful}, which usually means that it purposefully forgets some information. Its left adjoint is then called \emph{free}, because it freely ad-libs the forgotten information. 
+that attempts to reconstruct lost information, to the best of its ability. Often the functor $R$ is \emph{forgetful}, which means that it purposefully forgets some information. Its left adjoint is then called \emph{free}, because it freely ad-libs the forgotten information. 
 
 
 Of course it's not always possible, but under certain conditions such left adjoint exists. These conditions are spelled out in the Freyd's General Adjoint Functor Theorem. 
 
-To understand them, we have to talk a little about size issues. A lot of interesting categories are large. It means that there are so many objects in the category that they don't even form a set. The category of all sets, for instance, is large (there is no set of all sets). It's also possible that morphisms between two objects don't form a set. 
+To understand them, we have to talk a little about size issues. 
+
+\section{Size issues}
+
+A lot of interesting categories are large. It means that there are so many objects in the category that they don't even form a set. The category of all sets, for instance, is large (there is no set of all sets). It's also possible that morphisms between two objects don't form a set. 
 
 A category in which objects form a set is called \emph{small}, and a category in which hom-sets are sets is called \emph{locally small}. 
 
@@ -93,7 +99,9 @@ We assume that the source of the functor $R$, the category $\mathcal D$, is loca
 
 If it weren't for size issues, this would be enough to guarantee the existence of the left adjoint, and we'll first sketch the proof for this simplified case. In the general case, there is one more condition, the Solution Set Condition, which we'll discuss later.
 
-Here's the problem we are trying to solve. We have the functor $R$ that maps objects and morphisms from $\mathcal D$ to $\mathcal C$. We want to define another functor $L$ that goes in the opposite direction. We're not looking for the inverse, so we're not expecting the composition of this functor with $R$ to be identity, but we want it to be \emph{related} to identity by two natural transformations called unit and counit. Their components are, respectively:
+\section{Left adjoint and the comma category}
+
+Here's the problem we are trying to solve. We have a functor $R$ that maps objects and morphisms from $\mathcal D$ to $\mathcal C$. We want to define another functor $L$ that goes in the opposite direction. We're not looking for the inverse, so we're not expecting the composition of this functor with $R$ to be identity, but we want it to be \emph{related} to identity by two natural transformations called unit and counit. Their components are, respectively:
 \[ \eta_c : c \to R L c\]
 \[\epsilon_d : L R d \to d \]
 and, as long as they satisfy some additional triangle identities, they will establish the adjunction $L \dashv R$.
@@ -168,6 +176,8 @@ Notice an interesting fact: we can interpret these triangles as commutation cond
 
 \end{tikzpicture}
 \end{figure}
+
+\section{Constructing the limit}
 
 We can now take all this information about $c$ that's been encoded in $c/R$ and move it back to $\mathcal D$. We define a projection functor $\pi_c \colon c/R \to D$ that maps $(d, f)$ to $d$, thus forgetting the morphism $f$. What's important, though, is that this functor keeps the information encoded in the morphisms of $c/R$, because these are morphisms in $\mathcal D$.
 
@@ -293,7 +303,7 @@ Since we have defined $L c$ as the limit of the diagram $\pi_c$ and $R$ preserve
 
 
 
-Incidentally, we can interpret $\eta_c$ as an object of the comma category $c/R$, namely $(Lc, \eta_c \colon c \to R L c)$. In fact, this is the \emph{initial object} in that category. If you pick any other object, say, $(d, g \colon c \to R d)$, you can always find a morphism $h \colon L c \to d$, which is just a leg, a projection, in the limiting cone that defines $L c$. It is automatically a morphism in $c/R$ because the following triangle commutes:
+Incidentally, we can interpret $\eta_c$ itself as an object of the comma category $c/R$, namely the one defined by the pair $(Lc, \eta_c \colon c \to R L c)$. In fact, this is the \emph{initial object} in that category. If you pick any other object, say, $(d, g \colon c \to R d)$, you can always find a morphism $h \colon L c \to d$, which is just a leg, a projection, in the limiting cone that defines $L c$. It is automatically a morphism in $c/R$ because the following triangle commutes:
 
 \begin{figure}[H]
 \centering
@@ -314,9 +324,11 @@ First, we repeat our construction starting with $c = R d$. We define the comma c
 
 To complete this proof, one should show that the unit and counit are natural transformations and that they satisfy triangle identities. 
 
-So what about those pesky size issues? It's one thing to demand the existence of all small limits, and a completely different thing to demand the existence of all large limits. Since the comma category may be too large, maybe we can cut it down to size by carefully picking up a (small) set of objects out of all objects of $\mathcal D$. We may take some indexing set $I$ and construct a family $d_i$ of objects of $\mathcal D$ indexed by elements of $I$. It doesn't have to be one family for all---we may pick a different family for every object $c$ for which we are performing our construction. 
+\section{Solution set condition}
 
-Instead of using the whole comma category $c/R$, we'll limit ourselves to a set of arrows $f_i \colon c \to R d_i$. But in a comma category we also had morphisms between arrows. In fact they were the essential carriers of the structure of the comma category. Let's have another look at these morphisms.
+So what about those pesky size issues? It's one thing to demand the existence of all small limits, and a completely different thing to demand the existence of large limits (such requirement may narrow down the available categories to preorders). Since the comma category may be too large, maybe we can cut it down to size by carefully picking up a (small) set of objects out of all objects of $\mathcal D$. We may take some indexing set $I$ and construct a family $d_i$ of objects of $\mathcal D$ indexed by elements of $I$. It doesn't have to be one family for all---we may pick a different family for every object $c$ for which we are performing our construction. 
+
+Instead of using the whole comma category $c/R$, we'll limit ourselves to a set of arrows $f_i \colon c \to R d_i$. But in a comma category we also have morphisms between arrows. In fact they are the essential carriers of the structure of the comma category. Let's have another look at these morphisms.
 
 \begin{figure}[H]
 \centering
@@ -330,7 +342,7 @@ Instead of using the whole comma category $c/R$, we'll limit ourselves to a set 
 \end{tikzcd}
 \end{figure}
 
-This commuting condition can be re-interpreted as describing a factorization of $g$ through $f$. It so happens that every morphism $g$ can be trivially factorized through some $f$ by  picking $d = d'$ and $h = id_d$. But if we restrict the factors $f$ to be members of the family $f_i$ then not every $g \colon c \to R d$  (for arbitrary $d$) can be automatically factorized. We have to demand it. That gives us the following:
+This commuting condition can be re-interpreted as a factorization of $g$ through $f$. It so happens that every morphism $g$ can be trivially factorized through some $f$ by  picking $d = d'$ and $h = id_d$. But if we restrict the factors $f$ to be members of the family $f_i$ then not every $g \colon c \to R d$  (for arbitrary $d$) can be automatically factorized. We have to demand it. That gives us the following:
 
 \emph{Solution Set Condition}: For every object $c$ there exists a small set $I$ with an $I$-indexed family of objects $d_i$ in $\mathcal D$ and a family of morphisms $f_i \colon c \to R d_i$, such that every morphism $g \colon c \to R d$ can be factored through one of $f_i$. That is, there exists a morphism $h \colon d_i \to d$ such that
 \[g = R h \circ f_i \]
@@ -384,13 +396,15 @@ This commuting condition can be re-interpreted as describing a factorization of 
 
 There is a shorthand for this statement: All comma categories $c/R$ admit weakly initial families of objects. We'll come back to it later.
 
+\section{Freyd's theorem}
+
 We can now formulate:
 
 \emph{Freyd's Adjoint Functor Theorem}: If $\mathcal D$ is a locally small and small-complete category, and the functor $R \colon D \to C$ is continuous (small-limit preserving), and it satisfies the solution set condition, then $R$ has a left adjoint.
 
 We've seen before that the key to defining the point-wise left adjoint was to find the initial object in the comma category $c/R$. The problem is that this comma category may be large. So the trick is to split the proof into two parts: first defining a \emph{weakly} initial object, and then constructing the actual initial object using equalizers. A weakly initial object has morphisms to every object in the category but, unlike its strong version, these morphisms don't have to be unique. 
 
-An even weaker notion is that of a weakly initial set of objects. These are objects that among themselves have arrows to every object in the category, but it's possible that no individual object has all the arrows. The solution set in Freyd's theorem is such a weakly initial set in the comma category $c/R$. Since we assumed that $\mathcal C$ is small-complete, we can take a product of these objects and show that it's weakly initial. The proof then proceeds with the construction of the initial object. 
+An even weaker notion is that of a weakly initial \emph{set of objects}. These are objects that among themselves have arrows to every object in the category, but it's possible that no individual object has all the arrows. The solution set in Freyd's theorem is such a weakly initial set in the comma category $c/R$. Since we assumed that $\mathcal C$ is small-complete, we can take a product of these objects and show that it's weakly initial. The proof then proceeds with the construction of the initial object. 
 
 The details of the proof can be found in any category theory text or in \href{https://ncatlab.org/nlab/show/adjoint+functor+theorem}{nLab}. 
 
