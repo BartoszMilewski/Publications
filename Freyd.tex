@@ -324,6 +324,22 @@ First, we repeat our construction starting with $c = R d$. We define the comma c
 
 To complete this proof, one should show that the unit and counit are natural transformations and that they satisfy triangle identities. 
 
+\section{End of a comma category}
+
+An interesting insight into this construction can be gained using the end calculus. In my previous post, I talked about (weighted) colimits as coends, but the same argument can be dualized to limits and ends. For instance, the comma category can be described as the following coend:
+\[c/R \cong \mathcal{D} \int^d \mathcal{C} (c, R d)\]
+The limit of $\pi_c$ over the comma category can be written as
+\[\lim_{c/R} \pi_c \cong \int_{(d, f)\colon c/R} \pi_c (d, f) \cong \int_{(d, f)\colon c/R} d\]
+This, in turn, can be rewritten as a weighted limit:
+\[\mbox{lim}^{\mathcal{C}(c, R -)} Id \cong \int_{d \colon \mathcal{D}} \mathcal{C}(c, R d) \pitchfork d\]
+If the left adjoint $L$ exists, this can be rewritten as
+\[\int_{d \colon \mathcal{D}} \mathcal{D}(L c, d) \pitchfork d\]
+which, using standard calculus of ends (see Appendix), can be shown to be isomorphic to $L c$.
+
+The pitchfork here is the power (cotensor) defined by the equation
+\[\mathcal{D}\big(d', s \pitchfork d\big) \cong Set\big(s, \mathcal{D}(d', d)\big)\]
+You may think of $s \pitchfork d$ as the product of $s$ copies of the object $d$, where $s$ is a set.
+
 \section{Solution set condition}
 
 So what about those pesky size issues? It's one thing to demand the existence of all small limits, and a completely different thing to demand the existence of large limits (such requirement may narrow down the available categories to preorders). Since the comma category may be too large, maybe we can cut it down to size by carefully picking up a (small) set of objects out of all objects of $\mathcal D$. We may take some indexing set $I$ and construct a family $d_i$ of objects of $\mathcal D$ indexed by elements of $I$. It doesn't have to be one family for all---we may pick a different family for every object $c$ for which we are performing our construction. 
@@ -409,6 +425,19 @@ An even weaker notion is that of a weakly initial \emph{set of objects}. These a
 The details of the proof can be found in any category theory text or in \href{https://ncatlab.org/nlab/show/adjoint+functor+theorem}{nLab}. 
 
 Next we'll see the application of these results to the problem of defunctionalization of computer programs.
+
+\section{Appendix}
+To show that
+\[\int_d \mathcal{D}(L c, d) \pitchfork d \cong L c\]
+it's enough to show that the hom-functors from an arbitrary object $d'$ are isomorphic
+\[\begin{aligned}
+& \mathcal{D}\big(d', \int_d \mathcal{D}(L c, d) \pitchfork d\big) \\
+\cong & \int_d \mathcal{D}\big(d',  \mathcal{D}(L c, d) \pitchfork d\big) \\
+\cong & \int_d Set\big( \mathcal{D}(L c, d),  \mathcal{D}(d', d) \big) \\
+\cong & \; \mathcal{D}(d', L c)
+\end{aligned} 
+\]
+I used the continuity of the hom-functor, the definition of the power (cotensor) and the ninja Yoneda lemma.
 
 \end{document}
 
