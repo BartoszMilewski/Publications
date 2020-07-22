@@ -326,19 +326,20 @@ To complete this proof, one should show that the unit and counit are natural tra
 
 \section{End of a comma category}
 
-An interesting insight into this construction can be gained using the end calculus. In my previous post, I talked about (weighted) colimits as coends, but the same argument can be dualized to limits and ends. For instance, the comma category can be described as the following coend:
+An interesting insight into this construction can be gained using the end calculus. In my \href{http://bartoszmilewski.com/2020/07/20/weighted-colimits/}{previous post}, I talked about (weighted) colimits as coends, but the same argument can be dualized to limits and ends. For instance, this is our comma category as a category of elements in the coend notation:
 \[c/R \cong \mathcal{D} \int^d \mathcal{C} (c, R d)\]
-The limit of $\pi_c$ over the comma category can be written as
+The limit of of the projection functor $\pi_c$ over the comma category can be written in the end notation as
 \[\lim_{c/R} \pi_c \cong \int_{(d, f)\colon c/R} \pi_c (d, f) \cong \int_{(d, f)\colon c/R} d\]
-This, in turn, can be rewritten as a weighted limit:
-\[\mbox{lim}^{\mathcal{C}(c, R -)} Id \cong \int_{d \colon \mathcal{D}} \mathcal{C}(c, R d) \pitchfork d\]
-If the left adjoint $L$ exists, this can be rewritten as
-\[\int_{d \colon \mathcal{D}} \mathcal{D}(L c, d) \pitchfork d\]
-which, using standard calculus of ends (see Appendix), can be shown to be isomorphic to $L c$.
-
+This, in turn, can be rewritten as a weighted limit, with every $d$ weighted by the set $\mathcal{C}(c, R d)$:
+\[\mbox{lim}^{\mathcal{C}(c, R -)} \mbox{Id} \cong \int_{d \colon \mathcal{D}} \mathcal{C}(c, R d) \pitchfork d\]
 The pitchfork here is the power (cotensor) defined by the equation
 \[\mathcal{D}\big(d', s \pitchfork d\big) \cong Set\big(s, \mathcal{D}(d', d)\big)\]
-You may think of $s \pitchfork d$ as the product of $s$ copies of the object $d$, where $s$ is a set.
+You may think of $s \pitchfork d$ as the product of $s$ copies of the object $d$, where $s$ is a set. The name \emph{power} conveys the idea of iterated multiplication. Or, since power is a special case of exponentiation, you may think of $s \pitchfork d$ as a function object imitating mappings from $s$ to $d$.
+
+To continue, if the left adjoint $L$ exists, the weighted limit in question can be replaced by
+\[\int_{d \colon \mathcal{D}} \mathcal{D}(L c, d) \pitchfork d\]
+which, using standard calculus of ends (see Appendix), can be shown to be isomorphic to $L c$. We end up with:
+\[\lim_{c/R} \pi_c \cong L c\]
 
 \section{Solution set condition}
 
