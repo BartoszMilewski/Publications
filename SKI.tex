@@ -1,0 +1,134 @@
+\documentclass[11pt]{amsart}          
+\usepackage[a4paper,verbose]{geometry}
+\geometry{top=3cm,bottom=3cm,left=3cm,right=3cm,textheight=595pt}
+\setlength{\parskip}{0.3em}
+% ==============================
+% PACKAGES
+% ==============================
+
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{caption}
+\usepackage[inline]{enumitem}
+\setlist{itemsep=0em, topsep=0em, parsep=0em}
+\setlist[enumerate]{label=(\alph*)}
+\usepackage{etoolbox}
+\usepackage{stmaryrd} 
+\usepackage[dvipsnames]{xcolor}
+\usepackage[]{hyperref}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+\usepackage{mathtools}
+
+\usepackage{tikz-cd}
+\usepackage{minted}
+\usepackage{float}
+\usetikzlibrary{
+  matrix,
+  arrows,
+  shapes
+}
+
+\setcounter{tocdepth}{1} % Sets depth for table of contents. 
+
+% ======================================
+% MACROS
+%
+% Add your own macros below here
+% ======================================
+
+\newcommand{\rr}{{\mathbb{R}}}
+\newcommand{\nn}{{\mathbb{N}}}
+\newcommand{\iso}{\cong}
+\newcommand{\too}{\longrightarrow}
+\newcommand{\tto}{\rightrightarrows}
+\newcommand{\To}[1]{\xrightarrow{#1}}
+\newcommand{\Too}[1]{\To{\;\;#1\;\;}}
+\newcommand{\from}{\leftarrow}
+\newcommand{\From}[1]{\xleftarrow{#1}}
+\newcommand{\Cat}[1]{\mathbf{#1}}
+\newcommand{\cat}[1]{\mathcal{#1}}
+\newtheorem*{remark}{Remark}
+\renewcommand{\ss}{\subseteq}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
+  {\end{minted}}
+
+% ======================================
+% FRONT MATTER
+% ======================================
+
+\author{Bartosz Milewski}
+\title{The fall of the SKI civilization}
+
+\begin{document}
+\maketitle{}
+
+\begin{abstract}
+The recent breakthroughs in deciphering the language and the literature left behind by the now extinct Sparklean civilization provides valuable insights into their history, science, and philosophy. 
+\end{abstract}
+
+The oldest documents discovered on the third planet of the star Lambda Combinatoris talk about the prehistory of the Sparklean thought. The ancient \emph{Book of Application} postulated that the \emph{essence of being} is decomposition, expressed symbolically as 
+ \[ A = B C\]
+meaning that $A$ can be decomposed into $B$ and $C$. The breakthrough came with the realization that, if $C$ itself can be decomposed
+ \[ C = F G\]
+then $A$ could be further decomposed into
+ \[ A = B (F G)\]
+Similarly, if $B$ can be decomposed
+ \[ B = D E\]
+then 
+ \[ A = (D E) C\]
+In the latter case (but not the former), it became customary to drop the parentheses and simply write it as
+ \[ A = D E C\]
+Following these discoveries, the Sparklean civilization went through a period called \emph{The Great Decomposition} that lasted almost three thousand years, during which essentially anything that could be decomposed was successfully decomposed.
+
+At the end of \emph{The Great Decomposition}, a new school of thought emerged, claiming that, if things can be decomposed into parts, they can be also recomposed from these parts. 
+
+Initially there was strong resistance to this idea. The argument was put forward that decomposition followed by recomposition doesn't change anything. This was settled by the introduction of a special object called \emph{The Eye}, denoted by $I,$ defined by the unique property of leaving things alone
+ \[ I A = A\]
+
+After the introduction of $I$, a long period of general stagnation accompanied by lack of change followed.
+
+We don't have many records from the next period, as it was marked by attempts at forgetting things and promoting ignorance. It started by the introduction of $K$, which ignores one of its inputs
+ \[ K A B = A\]
+Notice that this definition is a shorthand for the parenthesized version
+ \[ (K A) B = A\]
+
+The argument for introducing $K$ was that ignorance is an important part of understanding. By rejecting $B$ we are saying that $A$ is important. We are abstracting away the inessential part $B$. 
+
+For instance---the argument went---if we decompose $C$
+ \[ C = A B\]
+and $D$ happens to have a similar decomposition
+ \[ D = A E\]
+then $K$ will abstract the $A$ part from both $C$ and $D$. From the perspective of $K$, there is no difference between $C$ and $D$. 
+
+The only positive outcome of the \emph{Era of Ignorance} was the development of abstract mathematics. Sparklean thinkers argued that, if you disregard the particularities of the fruit in question, there is no difference between having three apples and three oranges. Number three was thus born, followed by many others (four and seven, to name just a few).
+
+The final \emph{Industrial} phase of the Sparklean civilization that ultimately led to their demise was marked by the introduction of $S$. The Sparklean industry was based on the principle of mass production; and mass production starts with duplication and reuse. Suppose you have a reusable part $C$. $S$ allows you to duplicate $C$ and combine it with both $A$ and $B$. 
+ \[ S A B C = (A C) (B C)\]
+If you think of $A$ and $B$ as abstractions---that is the results of ignoring some parts of the whole---$S$ lets you substitute $C$ in place of those forgotten parts. 
+
+Or, conversely, it tells you that the object
+ \[ E = S A B C\]
+can be decomposed into two parts that have something in common. This common part is $C$.
+
+Unfortunately, during the \emph{Industrial} period, a lot of Sparkleans lost their identity. They discovered that
+ \[ I = S K K\]
+Indeed
+ \[ I A = S K K A = K A (K A) = A\]
+But ultimately, what precipitated their end was the existential crisis. They lost their will to live because they couldn't figure out $Y$.
+
+Postscript: After submitting this paper to the journal of \emph{Compositionality}, we have been informed by the reviewer that a similar theory of SKI combinators was independently developed on Earth by a Russian logician, Moses Schönfinkel. According to this reviewer, the answer to the meaning of life is the $Y$ combinator, which introduces recursion and can be expressed as 
+ \[ Y = S(K(SII))(S(S(KS)K)(K(SII)))\]
+We were unable to verify this assertion, as it led us into a rabbit hole.
+
+\end{document}
