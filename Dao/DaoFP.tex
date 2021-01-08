@@ -1,0 +1,62 @@
+\documentclass[11pt, book]{memoir}
+
+\settrims{0pt}{0pt} % page and stock same size
+\settypeblocksize{*}{34.5pc}{*} % {height}{width}{ratio}
+\setlrmargins{*}{*}{1} % {spine}{edge}{ratio}
+\setulmarginsandblock{1in}{1in}{*} % height of typeblock computed
+\setheadfoot{\onelineskip}{2\onelineskip} % {headheight}{footskip}
+\setheaderspaces{*}{1.5\onelineskip}{*} % {headdrop}{headsep}{ratio}
+\checkandfixthelayout
+
+\chapterstyle{bianchi}
+\newcommand{\titlefont}{\normalfont\Huge\bfseries}
+\renewcommand{\chaptitlefont}{\titlefont}
+
+\usepackage{subfiles}
+
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{tikz-cd}
+\usepackage{float}
+
+\newtheorem{exercise}{Exercise}[section]
+\newcommand{\exinline}[1]{(\refstepcounter{exercise}Exercise~\theexercise\label{#1})}
+
+\usepackage{minted}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
+  {\end{minted}}
+
+\begin{document}
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+\frontmatter
+
+\title{\huge The Dao of Functional Programming}
+\author{\Large Bartosz Milewski }
+
+\date{\vfill (Last updated: \today)}
+
+\maketitle
+
+\tableofcontents*
+
+\clearpage
+
+\section{Preface}
+
+Most programming texts, following Brian Kernighan, start with "Hello World!". It's natural to want to get the immediate gratification of making the computer do your bidding and print these famous words. But the real mastery of computer programming goes deeper than that, and rushing into it may only give you a false feeling of power, when in reality you're just parroting the masters. If your ambition is just to learn a useful, well-paid skill then, by all means, feel free to jump right into it. There are tons of books and courses that will teach you to write code in any language of your choice. However, if you really want to get to the essence of programming, you need to be patient and persistent.
+
+
+\mainmatter
+
+\subfile{1-CleanSlate}
+\subfile{2-Composition}
+\subfile{3-Sums}
+
+
+\end{document}

@@ -1,0 +1,358 @@
+\documentclass[DaoFP]{subfiles}
+\begin{document}
+\setcounter{chapter}{1}
+\chapter{Composition}
+
+\section{Composition}
+
+Programming is about composition. Paraphrasing Wittgenstein, we could say: ``Of that which cannot be decomposed one should not speak.'' This is not a prohibition, it's a statement of fact. The process of studying, understanding, and describing is the same as the process of decomposing, and our language reflects this. 
+
+The reason we have built the vocabulary of objects and arrows is precisely to express the idea of composition.  
+
+Given an arrow $f$ from $A$ to $B$ and an arrow $g$ from $B$ to $C$, their composition is an arrow that goes directly from $A$ to $C$. In other words, if there are two arrows, the target of one being the same as the source of the other, we can always compose them to get a third arrow.
+
+\[
+ \begin{tikzcd}
+ A
+ \arrow[rr, bend left, "h"]
+ \arrow[r, "f"']
+ & B
+ \arrow[r, "g"']
+& C
+ \end{tikzcd}
+\]
+
+In math we denote composition using a little circle
+\[h = g \circ f\]
+We read this: ``$h$ is equal to $g$ after $f$.'' The order of composition might seem backward, but this is because we think of functions as taking arguments on the right.
+In Haskell we replaced the circle with a dot:
+\begin{haskell}
+h = g . f
+\end{haskell}
+This is every program in a nutshell. In order to accomplish \hask{h}, we decompose it into simpler problems, \hask{f} and \hask{g}. These, in turn, can be decomposed further, and so on.
+
+Now suppose that we were able to decompose $g$ itself into $j \circ k$. We have
+\[h = (j \circ k) \circ f\]
+We want this decomposition to be the same as
+\[h = j \circ (k \circ f)\]
+We want to be able to say that we have decomposed $h$ into three simpler problems
+\[h =  j \circ k \circ f\]
+and not have to keep track which decomposition came first. This is called \emph{associativity} of composition, and we will assume it from now on.
+
+Composition is the source of two mappings of arrows called pre-composition and post-composition. 
+
+When an arrow $f$ is post-composed after an arrow $h$, it produces the arrow $f \circ h$. Of course, $f$ can be post-composed only after arrows whose target is the source of $f$. Post-composition by $f$ is written as $(f \circ -)$, leaving a hole for $h$. As Lao Tzu would say, "Usefulness of post-composition comes from what is not there."
+
+Thus an arrow $f \colon A \to B$ induces a mapping of arrows $(f \circ -)$ that maps arrows which are probing $A$ to arrows that are probing $B$. 
+
+\[
+ \begin{tikzcd}
+ \node (a1) at (0, 2) {};
+ \node (a2) at (-0.5, 2) {};
+ \node (a3) at (0.5, 2) {};
+ \node (aa) at (0.5, 1) {};
+ \node(a) at (0, 0) {A};
+ \draw[->, red] (a1) -- (a);
+ \draw[->] (a2) -- (a);
+ \draw[->, blue] (a3) -- (a);
+ \node (b1) at (3+0, 2) {};
+ \node (b2) at (3-0.5, 2) {};
+ \node (b3) at (3+0.5, 2) {};
+ \node (bb) at (2.5, 1) {};
+ \node(b) at (3, 0) {B};
+ \draw[->, red] (b1) -- (b);
+ \draw[->] (b2) -- (b);
+ \draw[->, blue] (b3) -- (b);
+ \draw[->] (a) -- node[below]{f} (b);
+ \draw[->, dashed] (aa) -- node[above]{(f \circ -)} (bb);
+  \end{tikzcd}
+\]
+Since objects have no internal structure, when we say that $f$ transforms $A$ to $B$, this is exactly what we mean. 
+
+Post-composition lets us shift focus from one object to another.
+
+Dually, you can pre-compose $f$, or apply $(- \circ f)$ to arrows originating in $B$ and map them to arrows originating in $A$. 
+
+\[
+ \begin{tikzcd}
+ \node (a1) at (0, 2) {};
+ \node (a2) at (-0.5, 2) {};
+ \node (a3) at (0.5, 2) {};
+ \node (aa) at (0.5, 1) {};
+ \node(a) at (0, 0) {A};
+ \draw[<-, red] (a1) -- (a);
+ \draw[<-] (a2) -- (a);
+ \draw[<-, blue] (a3) -- (a);
+ \node (b1) at (3+0, 2) {};
+ \node (b2) at (3-0.5, 2) {};
+ \node (b3) at (3+0.5, 2) {};
+ \node (bb) at (2.5, 1) {};
+ \node(b) at (3, 0) {B};
+ \draw[<-, red] (b1) -- (b);
+ \draw[<-] (b2) -- (b);
+ \draw[<-, blue] (b3) -- (b);
+ \draw[->] (a) -- node[below]{f} (b);
+ \draw[->, dashed] (bb) -- node[above]{(- \circ f)} (aa);
+  \end{tikzcd}
+\]
+
+Pre-composition let us shift the perspective from one observer to another. Notice that the outgoing arrows are mapped in the direction opposite to the shifting arrow $f$.
+
+Do the following exercises to convince yourself that shifts in focus and perspective are composable.
+\begin{exercise}\label{ex-yoneda-composition}
+Suppose that you have two arrows, $f \colon A \to B$ and $g \colon B \to C$. Their composition induces a mapping of arrows $((g \circ f) \circ -)$. Show that the result is the same if you first apply $(f \circ -)$ and follow it by $(g \circ -)$. Hint: Pick an arbitrary object $X$ and an arrow $h \colon X \to A$ and see if you get the same result. 
+\end{exercise}
+
+\begin{exercise}
+Convince yourself that the composition from the previous exercise is associative. Hint: Start with three composable arrows.
+\end{exercise}
+
+\begin{exercise}
+Show that pre-composition $(- \circ f)$ is composable, but the order of composition is reversed.
+\end{exercise}
+
+\section{Function application}
+
+We are ready to write our first program. There is a saying: "A journey of a thousand miles begins with a single step." Our journey is from $1$ to $B$. The single step is an arrow from the terminal object $1$ to $A$. It's an element of $A$. We can write it as
+\[1 \xrightarrow x A \]
+The rest of the journey is the arrow 
+\[A \xrightarrow f B\]
+These two arrows are composable (they share the object $A$) and their composition is the arrow $y$ from $1$ to $B$. In other words, $y$ is an \emph{element} of $B$
+
+\[
+ \begin{tikzcd}
+ 1
+ \arrow[rr, bend left, "y"]
+ \arrow[r, "x"']
+ & A
+ \arrow[r, "f"']
+& B
+ \end{tikzcd}
+\]
+We can write it as
+\[y = f \circ x \]
+
+We used $f$ to map an \emph{element} of $A$ to an \emph{element} of $B$. Since this is something we do quite often, we call it the \emph{application} of a function $f$ to $x$, and use the shorthand notation
+\[y = f x \]
+Let's translate it to Haskell. We start with an element of $A$ (a shorthand for \hask{()->A})
+\begin{haskell}
+x :: A
+\end{haskell}
+We declare the function $f$ as an element of the ``object of arrows'' from $A$ to $B$
+\begin{haskell}
+f :: A -> B
+\end{haskell}
+The result is an element of $B$
+\begin{haskell}
+y :: B
+\end{haskell}
+and it is defined as
+\begin{haskell}
+y = f x
+\end{haskell}
+We call this the application of a function to an argument, but we expressed it purely in terms of function composition. (Note: In other programming languages function application requires the use of parentheses, e.g., \hask{y = f(x)}.)
+
+\section{Identity}
+
+You may think of arrows as representing change: object $A$ becomes object $B$. An arrow that loops back represents a change in an object itself. But change has its dual: lack of change, inaction or, as Lao Tze would say \emph{wu wei}. 
+
+Every object has a special arrow called the identity, which leaves the object unchanged. It means that, when you compose this arrow with any other arrow, either incoming or outgoing, you get that arrow back. Identity arrow does nothing to an arrow. 
+
+An identity arrow on the object $A$ is called $id_A$. So if we have an arrow $f \colon A \to B$, we can compose it with identities on either side
+
+\[id_B \circ f = f = f \circ id_A \]
+or, pictorially:
+\[
+ \begin{tikzcd}
+ A
+ \arrow[loop, "id_A"']
+ \arrow[r, "f"]
+ & B
+ \arrow[loop, "id_B"']
+ \end{tikzcd}
+\]
+
+We can easily check what an identity does to elements. Let's take an element $x \colon 1 \to A$ and compose it with $id_A$. The result is:
+\[id_A \circ x = x\]
+which means that identity leaves elements unchanged.
+
+In Haskell, we use the same name \hask{id} for all identity functions (we omit the object/type). The above equation, which specifies the action of $id$ on elements, translates directly to
+\begin{haskell}
+id x = x
+\end{haskell}
+and it becomes the definition of the function \hask{id}. 
+
+We've seen before that both the initial object and the terminal object have unique arrows circling back to them. Now we are saying that every object has an identity arrow circling back to it. Remember what we said about uniqueness: If you can find two of those, then they must be equal. We must conclude that these unique looping arrows we talked about must be the identity arrows. We can now label these diagrams:
+
+\[
+ \begin{tikzcd}
+ \hask{Void}
+ \arrow[loop, "id"']
+ \end{tikzcd}
+ \begin{tikzcd}
+ \hask{()}
+ \arrow[loop, "id"']
+ \end{tikzcd}
+\]
+
+In logic, identity arrow translates to a tautology. It's a trivial proof that, "if $A$ is true then $A$ is true."
+\begin{exercise}\label{ex-yoneda-identity}
+What does $(id_A \circ -)$ do to arrows terminating in $A$? What does $(- \circ id_A)$ do to arrows originating from $A$?
+\end{exercise}
+
+
+\section{Isomorphisms}
+
+If identity does nothing then why do we care about it? Imagine going on a trip, composing a few arrows, and finding yourself back at the starting point. The question is: Have you done anything, or have you wasted your time? The only way to answer this question is to compare your path with the identity arrow. 
+
+Some round trips bring change, others don't.
+
+The simplest round trip is a composition of two arrows going in opposite directions. 
+\[
+ \begin{tikzcd}
+ A
+ \arrow[r, bend left, "f"]
+ & B
+ \arrow[l, bend left, "g"]
+ \end{tikzcd}
+\]
+
+There are two possible round trips. One is $g \circ f$, which goes from $A$ to $A$. The other is $f \circ g$ , which goes from $B$ to $B$. If both of them can be replaced with identities, than we say that $g$ is the inverse of $f$
+\[ g \circ f = id_A\]
+\[f \circ g = id_B\]
+and we write it as $g = f^{-1}$. The arrow $ f^{-1}$ undoes the work of the arrow $f$. 
+
+Such a pair of arrows is called an \emph{isomorphism}.
+
+What does the existence of an isomorphisms tell us about the two objects they connect? 
+
+We said that objects are described by their interactions with other objects. So let's consider what these objects look like from the perspective of an observer object $X$. Take an arrow $h$ coming from $X$ to $A$.
+
+\[
+ \begin{tikzcd}
+ & X
+ \arrow[ld, "h"']
+ \\
+ A
+ \arrow[rr, "f"]
+  && B
+ \arrow[ll, bend left,  "f^{-1}"]
+ \end{tikzcd}
+\]
+There is a corresponding arrow coming from $X$ to $B$. It's just the composition of $f \circ h$, or the action of $(f \circ -)$ on $h$.
+\[
+ \begin{tikzcd}
+ & X
+ \arrow[ld, "h"']
+ \arrow[rd, "f \circ h"]
+ \\
+ A
+ \arrow[rr, "f"]
+  && B
+ \arrow[ll, bend left,  "f^{-1}"]
+ \end{tikzcd}
+\]
+Similarly, for any arrow probing $B$ there is a corresponding arrow probing $A$. It is given by the action of  $(f^{-1} \circ -)$. 
+
+We can move focus back and forth between $A$ and $B$ using $(f \circ -)$ and $(f^{-1} \circ -)$.
+
+We can combine these two mappings (see exercise \ref{ex-yoneda-composition}) to form a round trip. The result is the same as if we applied the composite $((f^{-1} \circ f) \circ -)$. But this is equal to $(id_A \circ  -)$ which, as we know from exercise \ref{ex-yoneda-identity}, leaves the arrows unchanged.
+
+Similarly, the round trip induced by $f \circ f^{-1}$ leaves the arrows $X \to B$ unchanged. 
+
+Imagine each arrow sending a message to its buddy, as determined by $f$ or $f^{-1}$. Each arrow would then find out that it received exactly one message, and it's a message from the same buddy. No arrow would be left behind, and no arrow would receive more than one message. Mathematicians call this kind of buddy system a \emph{bijection}.
+
+Therefore, arrow by arrow, the two objects $A$ and $B$ look exactly the same from the perspective of $X$. 
+
+Arrow-wise, there is no difference between the two objects. 
+
+In particular, if you replace $X$ with the terminal object $1$, you'll see that the two objects have the same elements. For every element $x \colon 1 \to A$ there is a corresponding element $y \colon 1 \to B$, namely $y = f \circ x$, and vice versa.
+
+Such indistinguishable objects are called \emph{isomorphic}, meaning ``the same shape.'' You've seen one, you've seen them all. We write this isomorphism as:
+
+\[A \cong B\]
+
+In classical logic, if B follows from A and A follows from B then A and B are logically equivalent. We often say that B is true "if and only if" A is true. However, unlike previous parallels between logic and type theory, this one is not as straightforward and, in fact, led to the development of a new branch of fundamental mathematics, the homotopy type theory, or HoTT for short.
+
+\begin{exercise}
+Make an argument that there is also a bijection between arrows \emph{outgoing} from two isomorphic objects. Draw the corresponding diagrams.
+\end{exercise}
+
+
+\begin{exercise}
+Show that every object is isomorphic to itself
+\end{exercise}
+
+\begin{exercise}
+If there are two terminal objects, show that they are isomorphic
+\end{exercise}
+
+\begin{exercise}
+Show that the isomorphism from the previous exercise is unique.
+\end{exercise}
+
+\section{Naturality}
+
+When two objects are isomorphic, we can switch focus from one to another using post-composition, with either $(f \circ -)$ or $(f^{-1} \circ -)$. To switch between different observers, we use pre-composition. 
+
+
+
+If two probing objects, $X$ and $Y$ are connected by an arrow $g \colon Y \to X$, their views of the isomorphic objects are not unrelated. For instance, an arrow $h$ probing $A$ from $X$ is related to the arrow $h\circ g$ probing the same object $A$ from $Y$. 
+
+\[
+ \begin{tikzcd}
+ X
+ \arrow[d, "h"']
+ && Y
+ \arrow[ll, "g"']
+  \arrow[dll, "h \circ g"']
+ \\
+ A
+ \arrow[rr, "f"]
+  && B
+ \arrow[ll, bend left,  "f^{-1}"]
+ \end{tikzcd}
+\]
+Similarly, an arrow $h'$ probing $B$ from $X$ corresponds to the arrow $h' \circ g$ probing it from $Y$.
+
+\[
+ \begin{tikzcd}
+ X
+ \arrow[drr, "h'"]
+ && Y
+ \arrow[ll, "g"']
+  \arrow[d, "h' \circ g"]
+ \\
+ A
+ \arrow[rr, "f"]
+  && B
+ \arrow[ll, bend left,  "f^{-1}"]
+ \end{tikzcd}
+\]
+
+If $h$ and $h'$ are "buddies" in the $X$ frame of reference, then $g \circ h$ and $g \circ h'$ should be "buddies" in the $Y$ frame of reference. And indeed they are! 
+
+The "buddy" condition is $h' = f \circ h$. When we pre-compose it with $g$ we get
+\[h'  \circ g = f \circ h \circ g\]
+which says that $h' \circ g$ is the buddy of $h \circ g$. 
+
+For isomorphic objects, the "buddy" relation between arrows is preserved when changing the reference frame to another object. Once buddies, buddies forever!
+
+Both, the "buddy" relation and the change of reference frame can be described using "composition with a hole." We started with $h$, found its buddy $h'$ using $(f \circ -)$, and then switched to the $Y$ frame by applying $(- \circ g)$. The result was the same if we first changed the frame using $(- \circ g)$ and then found its buddy in the $Y$ frame using $(f \circ -)$. If we use the same symbol $\circ$ for composition of compositions, we can write it as:
+
+\[(- \circ g) \circ (f \circ -) = (f \circ -) \circ (- \circ g)\]
+
+In other words, it doesn't matter if you first post-compose with $f$ and then pre-compose with $g$, or first pre-compose with $g$ and then post-compose with $f$. 
+
+\section{The Yoneda Connection}
+
+We have shown that if two objects are isomorphic, then they have the same sets of incoming (or, alternatively, outgoing) arrows. One of the most important and useful results in category theory is the converse of this statement. 
+
+Two objects are isomorphic if you can show that the sets of incoming arrows from all object are the same. 
+
+Since the essence of objects is in their arrows, when you want to compare objects, compare their arrows.
+
+This is a special, but very important, application of the Yoneda lemma.
+
+
+\end{document}
