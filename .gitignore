@@ -6,5 +6,4 @@
 *.out
 *.gz
 .DS_Store
-*.pdf
 *.toc
