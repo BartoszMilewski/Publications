@@ -29,7 +29,7 @@
 \begin{document}
 \maketitle{}
 
-My gateway drug to category theory was the Haskell lens library. What immediately peaked my attention was the van Laarhoven representation, which used functions that are functor-polymorphic. The following function type:
+My gateway drug to category theory was the Haskell lens library. What first peaked my attention was the van Laarhoven representation, which used functions that are functor-polymorphic. The following function type:
 \begin{haskell}
 type Lens s t a b = 
   forall f. Functor f => (a -> f b) -> (s -> f t)
@@ -40,7 +40,7 @@ get :: s -> a
 set :: s -> b -> t
 \end{haskell}
 
-My intuition was that the Yoneda lemma must be somehow involved. I remember sharing this idea excitedly with Edward Kmett, who was the only expert on category theory I knew. The reasoning was that a polymorphic function in Haskell is equivalent to a natural transformation in category theory. The Yoneda lemma relates natural transformations to functor values. Let me explain.
+My intuition was that the Yoneda lemma must be somehow involved. I remember sharing this idea excitedly with Edward Kmett, who was the only expert on category theory I knew back then. The reasoning was that a polymorphic function in Haskell is equivalent to a natural transformation in category theory. The Yoneda lemma relates natural transformations to functor values. Let me explain.
 
 In Haskell, the Yoneda lemma says that, for any functor \hask{f}, this polymorphic function:
 \begin{haskell}
@@ -69,9 +69,9 @@ If you vary $x$ in $\mathcal{C}(b, x)$, it becomes a functor, which is called a 
 newtype Reader b x = Reader (b -> x)
 \end{haskell}
 
-You can plug a representable functor it into the Yoneda lemma to get the following very important corollary:
+You can plug a representable functor for $f$ in the Yoneda lemma to get the following very important corollary:
 \[ \int_x \mathbf{Set}\big(\mathcal{C}(a, x), \mathcal{C}(b, x)\big) \cong \mathcal{C}(b, a) \]
-The set of natural transformation between two representable functors is isomorphic to a hom-set between the representing objects. (Notice that the objects are swapped.)
+The set of natural transformation between two representable functors is isomorphic to a hom-set between the representing objects. (Notice that the objects are swapped on the right-hand side.)
 
 \section{The van Laarhoven representation}
 
@@ -109,7 +109,7 @@ We are almost there! The last step is to realize that, in order to get the van L
 \[ \int_f \mathbf{Set}\big( \mathcal{C}(a, f b), \mathcal{C}(s, f t) \big) \]
 which is exactly the van Laarhoven representation. 
 
-Let's now look at the right-hand side:
+Now let's look at the right-hand side:
 \[  \mathcal{C}\big(s, R_t (L_b a)\big) =  \mathcal{C}\big( s, (L_b a) t \big)\]
 We know what $R_b$ is, but what's its left adjoint $L_b$? It must satisfy the adjunction:
 \[ [\mathcal{C},\mathbf{Set}](L_b a, f) \cong \mathcal{C}(a, R_b f) = \mathcal{C}(a, f b)\]
@@ -119,9 +119,9 @@ The identity has a simple solution when  $\mathcal{C}$ is $\mathbf{Set}$, so we'
 \[(L_b a) x =  \mathbf{Set}(b, x) \times a \]
 which is known as the \hask{IStore} comonad in Haskell. We can check the identity by first applying the currying adjunction to eliminate the product:
 \[ \int_x \mathbf{Set}\big(\mathbf{Set}(b, x) \times a, f x\big) \cong \int_x \mathbf{Set}\big(\mathbf{Set}(b, x), \mathbf{Set}(a, f x )\big) \]
-and then using the Yoneda lemma to replace $x$ with $b$,
+and then using the Yoneda lemma to ``integrate'' over $x$, which replaces $x$ with $b$,
 \[ \int_x \mathbf{Set}\big(\mathbf{Set}(b, x), \mathbf{Set}(a, f x )\big) \cong \mathbf{Set}(a, f b)\]
-So the right hand side of the original identity, after replacing $\mathcal{C}$ with $\mathbf{Set}$, becomes:
+So the right hand side of the original identity (after replacing $\mathcal{C}$ with $\mathbf{Set}$) becomes:
 \[  \mathbf{Set}\big(s, R_t (L_b a)\big) \cong \mathbf{Set}\big( s, (L_b a) t \big) \cong \mathbf{Set}\big(s,  \mathbf{Set}(b, t) \times a) \big) \]
 which can be translated to Haskell as:
 \begin{haskell}
@@ -129,7 +129,7 @@ which can be translated to Haskell as:
 \end{haskell}
 or a pair of \hask{set} and \hask{get}.
 
-I was very proud of myself for finding the right chain of substitutions, so I was pretty surprised when I learned from Mauro Jaskelioff and Russell O'Connor that they had a paper ready for publication with exactly the same proof (they added a reference citing my blog post). 
+I was very proud of myself for finding the right chain of substitutions, so I was pretty surprised when I learned from Mauro Jaskelioff and Russell O'Connor that they had a paper ready for publication with exactly the same proof. (They added a reference to my blog in their publication, which was probably a first.)
 
 \section{The Existentials}
 But there's more: there are other optics for which this trick doesn't work. The simplest one was the prism defined by a pair of functions:
@@ -147,7 +147,7 @@ Symbolically, we would want to write something like this:
 \begin{haskell}
 type Lens s t a b = exists c . (s -> (c, a), (c, b) -> t)
 \end{haskell}
-where \hask{c} is the residue.  We have a pair of functions: The first decomposes the source \hask{s} into the product of the residue \hask{c} and the focus \hask{a} . The second recombines the residue with the new focus \hask{b} resulting in the target \hask{t}.
+where \hask{c} is the residue.  We have here a pair of functions: The first decomposes the source \hask{s} into the product of the residue \hask{c} and the focus \hask{a} . The second recombines the residue with the new focus \hask{b} resulting in the target \hask{t}.
 
 Existential types can be encoded in Haskell using GADTs:
 \begin{haskell}
@@ -171,13 +171,13 @@ The beauty of this representation is that it can be immediately applied to the p
 
 To recover the standard encoding, we use the mapping-out property of the sum:
 \[  \mathcal{C}(c + b, t) \cong  \mathcal{C}(c, t)  \times  \mathcal{C}(b, t) \]
-This is simply saying that a function from the sum type is equivalent to a pair of functions---what we call the case analysis in programming.
+This is simply saying that a function from the sum type is equivalent to a pair of functions---what we call case analysis in programming.
 
 We get:
 \[ \int^c \mathcal{C}(s, c + a) \times \mathcal{C}(c + b, t) \cong \int^c \mathcal{C}(s, c + a) \times \mathcal{C}(c, t)  \times \mathcal{C}(b, t)\]
 This has the form suitable for the use of the Yoneda lemma, namely:
 \[ \int^c f c \times \mathcal{C}(c, t) \]
-with
+with the functor
 \[ f c = \mathcal{C}(s, c + a) \times \mathcal{C}(b, t) \]
 The result of the Yoneda is replacing $c$ with $t$, so the result is:
 \[ \mathcal{C}(s, t + a) \times \mathcal{C}(b, t)\]
@@ -189,9 +189,9 @@ It turns out that every optic has an existential form.
 
 If you squint hard enough, the Yoneda lemma 
 \[ \int_{x} \mathbf{Set}\big(\mathcal{C}(a, x), f x\big) \cong f a \]
-could be interpreted as the representable functor $\mathcal{C}(a, -)$ acting as the unit with respect to taking the end. It takes an $f$ and returns an $f$. 
+could be interpreted as the representable functor $\mathcal{C}(a, -)$ acting as the unit with respect to taking the end. It takes an $f$ and returns an $f$. Let's keep this in mind.
 
-We are going to need an identity that involves a higher-order natural transformation between two higher-order functors. These are actually the functors $R_a$ we've encountered before. They are parameterized by objects in $\mathcal{C}$, and their action on functors (co-presheaves) is to apply those functors to objects. They are the ``give me a functor and I'll apply it to my favorite object'' kind of functors. 
+We are going to need an identity that involves higher-order natural transformations between two higher-order functors. These are actually the functors $R_a$ that we've encountered before. They are parameterized by objects in $\mathcal{C}$, and their action on functors (co-presheaves) is to apply those functors to objects. They are the ``give me a functor and I'll apply it to my favorite object'' kind of functors. 
 
 We need a natural transformation between two such functors, and we can express it as an end:
 \[ \int_f  \mathbf{Set}( R_a f, R_s f) = \int_f  \mathbf{Set}( f a, f s) \]
@@ -225,6 +225,7 @@ to   :: b -> t
 \end{haskell}
 The key observation here is that such a pair of arrows is an element of the hom set in the category $\mathcal{C}^{op} \times \mathcal{C}$ between the pair $\langle a, b \rangle$ and the pair $\langle s, t \rangle$:
 \[ (\mathcal{C}^{op} \times \mathcal{C})( \langle a, b \rangle, \langle s, t \rangle) \]
+The ``twist'' of using $\mathcal{C}^{op}$ reverses the direction of the first arrow.
 
 \hask{Iso} has a simple profunctor representation:
 \begin{haskell}
@@ -255,24 +256,24 @@ class Profunctor p => Strong where
   second' :: p a b -> p (c, a) (c, b)
 \end{haskell}
 
-It turns out that profunctor categories with these structures are called Tambara modules. Tambara formulated them in the context of monoidal categories, for a more general tensor product. Sum (\hask{Either}) and product \hask{(,)} are just two special cases. 
+Profunctor categories with these structures are called Tambara modules. Tambara formulated them in the context of monoidal categories, for a more general tensor product. Sum (\hask{Either}) and product \hask{(,)} are just two special cases. 
 
 A Tambara module is an object in a profunctor category with additional structure defined by a family of morphisms:
 \[ \alpha_{c, \langle a, b \rangle} \colon p \langle a, b \rangle \to p\langle c \otimes a, c \otimes b \rangle \]
 with some naturality and coherence conditions. 
 
-So lenses and prisms can be defined as ends in the appropriate Tambara modules
+Lenses and prisms can thus be defined as ends in the appropriate Tambara modules
 \[ \int_{p \colon \mathbf{Tam}} \mathbf{Set}(p \langle a, b \rangle, p \langle s, t \rangle) \]
-And we can even use the double Yoneda trick to get the usual representation. 
+We can now use the double Yoneda trick to get the usual representation. 
 
 The problem is, we don't know in what category the result should be. We know the objects are pairs $\langle a, b \rangle$, but what are the morphisms between them? It turns out this problem was solved in a paper by Pastro and Street. The category in question is the Kleisli category for a particular promonad. This category is now better known as $\mathbf{Optic}$. Let me explain.
 
 \section{Double Yoneda with Adjunctions}
 The double Yoneda trick worked for an unconstrained category of functors. We need to generalize it to a category with some additional structure (for instance, a Tambara module). 
 
-Let's say we start with a functor category $[\mathcal{C}, \mathbf{Set}]$ and endow it with some additional structure, resulting in another functor category $\mathcal{T}$. It means that there is a (higher-order) forgetful functor $U \colon \mathcal{T} \to [\mathcal{C}, \mathbf{Set}]$ that forgets this structure. We'll also assume that there is an adjoint functor $F$ that freely generates the structure.
+Let's say we start with a functor category $[\mathcal{C}, \mathbf{Set}]$ and endow it with some structure, resulting in another functor category $\mathcal{T}$. It means that there is a (higher-order) forgetful functor $U \colon \mathcal{T} \to [\mathcal{C}, \mathbf{Set}]$ that forgets this additional structure. We'll also assume that there is the right adjoint functor $F$ that freely generates the structure.
 
-We will start the derivation of double Yoneda using the forgetful functor
+We will re-start the derivation of double Yoneda using the forgetful functor
 \[ \int_{f \colon \mathcal{T}} \mathbf{Set}( (U f) a, (U f) s)\]
 Here, $a$ and $s$ are objects in $\mathcal{C}$ and $(U f)$ is a functor in $[\mathcal{C}, \mathbf{Set}]$.
 
@@ -284,9 +285,9 @@ The adjunction tells us that
 \[ [\mathcal{C}, \mathbf{Set}]\big(\mathcal{C}(a, -), U f\big) \cong \mathcal{T}\Big(F\big(\mathcal{C}(a, -)\big), f\Big)\]
 The right-hand side is a hom-set in the functor category $\mathcal{T}$. Plugging this back into the original formula, we get 
 \[  \int_{f \colon \mathcal{T}}  \mathbf{Set}\Big(\mathcal{T}\Big(F\big(\mathcal{C}(a, -)\big), f\Big), \mathcal{T}\Big(F\big(\mathcal{C}(s, -)\big), f\Big) \Big)\]
-This is the set of natural transformations between two hom-functors, so we can use the corollary to the Yoneda lemma to replace it with:
+This is the set of natural transformations between two hom-functors, so we can use the corollary of the Yoneda lemma to replace it with:
 \[ \mathcal{T}\Big( F\big(\mathcal{C}(s, -), F\big(\mathcal{C}(a, -) \Big) \]
-We can use the adjunction again, in the opposite direction, to get:
+We can then use the adjunction again, in the opposite direction, to get:
 \[  [\mathcal{C}, \mathbf{Set}] \Big( \mathcal{C}(s, -), (U \circ F)\big(\mathcal{C}(a, -)\big) \Big) \]
 or, using the end notation:
 \[ \int_{c \colon C} \mathbf{Set} \Big(\mathcal{C}(s, c), (U \circ F)\big(\mathcal{C}(a, -) c \big)\Big) \]
@@ -297,7 +298,7 @@ This is the action of the higher-order functor $(U \circ F)$ on the hom-functor 
 The composition of two functors that form an adjunction is a monad $\Phi$. This is a monad in the functor category $[\mathcal{C}, \mathbf{Set}]$. Altogether, we get:
 \[ \int_{f \colon \mathcal{T}} \mathbf{Set}( (U f) a, (U f) s) \cong \Phi \big( \mathcal{C}(a, -) \big) s \]
 \section{Profunctor Representation of Lenses and Prisms}
-The previous formula can be immediately applied to the category of Tambara modules. The forgetful functor takes a Tambara module and maps it to a regular profunctor $p$, an object in the functor category $[\mathcal{C}^{op} \times \mathcal{C}, \mathbf{Set}]$. We just replace $a$ and $s$ with pairs of objects. We get:
+The previous formula can be immediately applied to the category of Tambara modules. The forgetful functor takes a Tambara module and maps it to a regular profunctor $p$, an object in the functor category $[\mathcal{C}^{op} \times \mathcal{C}, \mathbf{Set}]$. We replace $a$ and $s$ with pairs of objects. We get:
 \[ \int_{p \colon \mathbf{Tam}} \mathbf{Set}(p \langle a, b \rangle, p \langle s, t \rangle) \cong \Phi \big( (\mathcal{C}^{op} \times \mathcal{C})(\langle a, b \rangle, -) \big) \langle s, t \rangle\]
 The only missing piece is the promonad $\Phi$ (that's a monad operating on profunctors).
 
@@ -305,20 +306,20 @@ The key observation by Pastro and Street was that Tambara modules are higher-ord
 \[ \alpha \colon p \langle a, b \rangle \to p\langle c \otimes a, c \otimes b \rangle \]
 can be though of as components of a natural transformation
 \[ \int_{\langle a, b \rangle, c} \mathbf{Set} \big( p \langle a, b \rangle, p\langle c \otimes a, c \otimes b \rangle \big) \]
-By continuity of hom-sets, we can move the end over $c$:
-\[ \int_{\langle a, b \rangle} \mathbf{Set} \big( p \langle a, b \rangle, \int_c p\langle c \otimes a, c \otimes b \rangle \big) \]
-We can then define a higher order functor that acts on profunctors:
+By continuity of hom-sets, we can move the end over $c$ to the right:
+\[ \int_{\langle a, b \rangle} \mathbf{Set} \Big( p \langle a, b \rangle, \int_c p\langle c \otimes a, c \otimes b \rangle \Big) \]
+We can use this to define a higher order functor that acts on profunctors:
 \[ (\Theta p)\langle a, b \rangle =  \int_c p\langle c \otimes a, c \otimes b \rangle \]
-and the family of Tambara mappings can be written as a set of natural transformations $p \to (\Theta p)$:
+so that the family of Tambara mappings can be written as a set of natural transformations $p \to (\Theta p)$:
 \[ \int_{\langle a, b \rangle} \mathbf{Set} \big( p \langle a, b \rangle, (\Theta p)\langle a, b \rangle \big) \]
-Natural transformations are morphisms in the category of profunctors, and such a morphism $p \to (\Theta p)$ is a coalgebra for the functor $\Theta$.
+Natural transformations are morphisms in the category of profunctors, and such a morphism $p \to (\Theta p)$ is, by definition, a coalgebra for the functor $\Theta$.
 
 Pastro and Street go on showing that $\Theta$ is more than a functor, it's a comonad, and the Tambara structure is not just a coalgebra, it's a comonad coalgebra. 
 
 What's more, there is a monad that is adjoint to this comonad:
 \[ (\Phi p) \langle s, t \rangle = \int^{\langle x, y \rangle, c} (\mathcal{C}^{op} \times \mathcal{C})\big(\langle c \otimes x, c \otimes y \rangle, \langle s, t \rangle \big) \times p \langle x, y \rangle\]
 
-Incidentally, when a monad is adjoint to a comonad, the comonad coalgebras are isomorphic to monad algebras---in this case, Tambara modules. Indeed, the algebras are given by natural transformations:
+When a monad is adjoint to a comonad, the comonad coalgebras are isomorphic to monad algebras---in this case, Tambara modules. Indeed, the algebras $(\Phi p) \to p$ are given by natural transformations:
 \[ \int_{\langle s, t \rangle} \mathbf{Set}\Big( (\Phi p) \langle s, t \rangle, p\langle s, t \rangle \Big) \]
 Substituting the formula for $\Phi$,
 \[ \int_{\langle s, t \rangle} \mathbf{Set}\Big( \int^{\langle x, y \rangle, c} (\mathcal{C}^{op} \times \mathcal{C})\big(\langle c \otimes x, c \otimes y \rangle, \langle s, t \rangle \big) \times p \langle x, y \rangle, p\langle s, t \rangle \Big)\]
@@ -328,9 +329,9 @@ using the currying adjunction,
 \[ \int_{\langle s, t \rangle, \langle x, y \rangle, c}\mathbf{Set}\Big(  (\mathcal{C}^{op} \times \mathcal{C})\big(\langle c \otimes x, c \otimes y \rangle, \langle s, t \rangle \big),   \mathbf{Set}\big( p \langle x, y \rangle, p\langle s, t \rangle \big) \Big)\]
 and the Yoneda lemma, we get
 \[ \int_{\langle x, y \rangle, c}    \mathbf{Set}\big( p \langle x, y \rangle, p\langle c \otimes x, c \otimes y \rangle \big) \]
-which is the Tambara structure.
+which is the Tambara structure $\alpha$.
 
-$\Phi$ is exactly the monad that appears on the right-hand side of the double-Yoneda with adjunctions. Every monad can be decomposed into a pair of adjoint functors. The decomposition we're interested in is the one that involves the Kleisli category of free algebras. These algebras are the Tambara modules.
+$\Phi$ is exactly the monad that appears on the right-hand side of the double-Yoneda with adjunctions. This is because every monad can be decomposed into a pair of adjoint functors. The decomposition we're interested in is the one that involves the Kleisli category of free algebras for $\Phi$. And now we know that these algebras are Tambara modules.
 
 All that remains is to evaluate the action of $\Phi$ on the represesentable functor:
 \[ \Phi \big( (\mathcal{C}^{op} \times \mathcal{C})(\langle a, b \rangle, -) \big) \langle s, t \rangle\]
@@ -343,7 +344,7 @@ This is exactly the existential represenation of the lens and the prism:
 
 This was an encouraging result, and I was able to derive a few other optics using the same approach. 
 
-The idea was that Tambara modules were just one example of a monoidal action, and it could be easily generalized to other types of optics, like \hask{Grate}, where the action $c \otimes a$ is replaced by a (contravariant in $c$) action $a^c$, or \hask{c->a}, in Haskell. 
+The idea was that Tambara modules were just one example of a monoidal action, and it could be easily generalized to other types of optics, like \hask{Grate}, where the action $c \otimes a$ is replaced by the (contravariant in $c$) action $a^c$ (or \hask{c->a}, in Haskell). 
 
 There was just one optic that resisted that treatment, the \hask{Traversal}. The breakthrough came when I was joined by a group of talented students at the Applied Category Theory School in Oxford. 
 
@@ -353,13 +354,13 @@ A traversal is a kind of optic that can focus on zero or more items at a time. N
 \begin{haskell}
 s -> ([b] -> t, [a])
 \end{haskell}
-although Haskell is not able to force the sizes of both lists to be equal. 
+Still, Haskell is not able to force the sizes of both lists to be equal. 
 
 Since a list type can be represented as an infinite list of tuples, I knew that the categorical version of this formula must involve a power series:
 \[  \mathbf{Set} \big(s, \sum_{n} \mathbf{Set}(b^n, t) \times a^n\big) \]
 but was unable to come up with an existential form for it.
 
-Pickering, Gibbons, and Wu came up with a representation using profunctors that were cartesian, cocartesian, and monoidal at the same time, but the monoidal constraint didn't fit neatly into the Tambara scheme:
+Pickering, Gibbons, and Wu came up with a representation for traversals using profunctors that were cartesian, cocartesian, and monoidal at the same time, but the monoidal constraint didn't fit neatly into the Tambara scheme:
 \begin{haskell}
 class Profunctor p => Monoidal p where
   par   :: p a b -> p c d -> p (a, c) (b, d)
@@ -382,7 +383,7 @@ A traversal is similarly generated by a polynomial functor, or a power series fu
 \[ a \to \sum_n c_n \times a^n \]
 The key observation here is that there is a different object $c_n$ for every power of $a$, which can only be expressed using dependent types in programming. For every multiplicity of foci, the residue is of a different type. 
 
-In category theory, we can express the residue as a functor from the monoidal category $\mathbb{N}$ of natural numbers to $\mathbf{Set}$. The sum is really a coend over $\mathbb{N}$.
+In category theory, we can express the whole infinite sequence of residues as a functor from the monoidal category $\mathbb{N}$ of natural numbers to $\mathbf{Set}$. (The sum is really a coend over $\mathbb{N}$.)
 
 The existential version of a traversal is thus given by:
 \[ \int^{c \colon [\mathbb{N}, \mathbf{Set}]}  \mathbf{Set}\big(s, \sum_n c_n \times a^n\big) \times  \mathbf{Set}\big( \sum_m c_m \times b^m, t\big) \]
@@ -390,7 +391,7 @@ We can now use the continuity of the hom-set to replace the mapping out of a sum
 \[ \int^{c \colon [\mathbb{N}, \mathbf{Set}]}  \mathbf{Set}\big(s, \sum_n c_n \times a^n\big) \times  \prod_m \mathbf{Set}\big( c_m \times b^m, t\big) \]
 and use the currying adjunction
 \[  \int^{c \colon [\mathbb{N}, \mathbf{Set}]}  \mathbf{Set}\big(s, \sum_n c_n \times a^n\big) \times  \prod_m \mathbf{Set}\big( c_m, \mathbf{Set}( b^m, t)\big) \]
-The product of hom-sets is really an end over $\mathbb{N}$ or a set of natural transformations in $[\mathbb{N}, \mathbf{Set}]$
+The product of hom-sets is really an end over $\mathbb{N}$, or a set of natural transformations in $[\mathbb{N}, \mathbf{Set}]$
 \[  \int^{c \colon [\mathbb{N}, \mathbf{Set}]}  \mathbf{Set}\big(s, \sum_n c_n \times a^n\big) \times  [\mathbb{N}, \mathbf{Set}]\big( c_-, \mathbf{Set}( b^-, t)\big) \]
 and we can apply the Yoneda lemma to ``integrate'' over $c$ to get:
 \[ Set(s, \sum_n (Set(b^n, t) \times a^n)\big) \]
@@ -413,19 +414,19 @@ Notice that the pairs of arguments are heterogenous---e.g., in $\langle a, b \ra
 
 We have also generalized Tambara modules:
 \[ \alpha_{m, \langle a, b \rangle} \colon p \langle a, b \rangle \to p \langle m \actL a, m \actR b\rangle \]
-and the Pastro Street derivation of the promonad. That leads to the more general proof of isomorphism between the profunctor formulation and the existential formulation of optics. Just to be general enough, we did it for enriched categories, replacing $\mathbf{Set}$ with an arbitrary monoidal category. 
+and the Pastro Street derivation of the promonad. That lead us to a more general proof of isomorphism between the profunctor formulation and the existential formulation of optics. Just to be general enough, we did it for enriched categories, replacing $\mathbf{Set}$ with an arbitrary monoidal category. 
 
 Finally, we described some new interesting optics like algebraic and monadic lenses.
 
-\section{The Physics Angle}
+\section{The Physicist's Explanation}
 
-In a sense, the traversal result confirmed my initial intuition from general relativity that the most general optics are generated by the analog of diffeomorphisms. These are the smooth coordinate transformations under which Einstein's theory is covariant. 
+The traversal result confirmed my initial intuition from general relativity that the most general optics are generated by the analog of diffeomorphisms. These are the smooth coordinate transformations under which Einstein's theory is covariant. 
 
 Physicists have long been using symmetry groups to build theories. Laws of physics are symmetric with respect to translations, time shifts, rotations, etc.; leading to laws of conservation of momentum, energy, angular momentum, etc. There is an uncanny resemblance of these transformations to some of the monoidal actions in optics. The prism is related to translations, the lens to rotations or scaling, etc.
 
 There are many global symmetries in physics, but the real power comes from local symmetries: gauge symmetries and diffeomorphisms. These give rise to the Standard Model and to Einstein's theory of gravity. 
 
-A general monoidal action seen in optics is highly reminiscent of a diffeomorphism, and the symmetry behind a traversal looks like an analytical function.
+A general monoidal action seen in optics is highly reminiscent of a diffeomorphism, and the symmetry behind a traversal looks like it's generated by an analytical function.
 
 In my opinion, these similarities are a reflection of a deeper principle of compositionality. There is only a limited set of ways we can decompose complex problems, and sooner or later they all end up in category theory. 
 
@@ -433,7 +434,7 @@ The main difference between physics and category theory is that category theory 
 
 Here's how categorical optics might be seen by a physicist. 
 
-In physics we would start with a group of transformations. Its representations would be used, for instance, to classify elementary particles. In optics we start with a monoidal category $\mathcal{M}$ and define its action in the target category $\mathcal{C}$. (Notice the monoid rather than group.) 
+In physics we would start with a group of transformations. Its representations would be used, for instance, to classify elementary particles. In optics we start with a monoidal category $\mathcal{M}$ and define its action in the target category $\mathcal{C}$. (Notice the use of a monoid rather than a group.) 
 \[ \actL \colon \mathcal{M} \to [\mathcal{C}, \mathcal{C}] \]
 In physics we would represent the group using matrices, here we use endofunctors.
 
@@ -442,40 +443,63 @@ A profunctor is like a path that connects the initial state to the final state. 
 If we use mixed optics, final states come from a different category $\mathcal{D}$, but their transformations are parameterized by the same monoidal category:
 \[ \actR \colon \mathcal{M} \to [\mathcal{D}, \mathcal{D}] \]
 
-A path may be arbitrarily extended, at both ends, by morphisms. Given a morphism in $\mathcal{C}$:
+A path may be arbitrarily extended, at both ends, by a pair of morphisms. Given a morphism in $\mathcal{C}$:
 \[ f \colon a' \to a \]
 and another one in $\mathcal{D}$
 \[g \colon b \to b' \]
-the profunctor lifts them to the mapping of paths:
+the profunctor uses them to extend the path:
 \[ p \langle a, b \rangle \to p \langle a', b' \rangle \]
+
+\[
+ \begin{tikzcd}
+  & a'
+  \arrow[r, bend left, dashed, blue, "f"]
+ & a
+ \arrow[r, bend right, "p"]
+ & b
+  \arrow[r, bend left, dashed, blue, "g"]
+ &  b'
+  \end{tikzcd}
+\]
+
 
 
 A (generalized) Tambara module is like the space of paths that can be extended by transforming their endpoints.
 \[ \alpha_{m, \langle a, b \rangle} \colon p \langle a, b \rangle \to p \langle m \actL a, m \actR b\rangle \]
-If we have a path that can evolve $a$ into $b$, then the same path can be used to evolve $m \actL a$ into $m \actR b$. 
+If we have a path that can evolve $a$ into $b$, then the same path can be used to evolve $m \actL a$ into $m \actR b$. In physics, we would say that the paths are ``invariant'' under the transformation, but in category theory we are fine with a one-way mapping.
 
-The profunctor representation is like a path integral in physics:
+\[
+ \begin{tikzcd}
+  & m \actL a
+  \arrow[r, bend left, dashed, red]
+ & a
+ \arrow[r, bend right, "p"]
+ & b
+  \arrow[r, bend left, dashed, red]
+ & m \actR b
+  \end{tikzcd}
+\]
+
+
+The profunctor representation is like a path integral:
 \[ \int_{p \colon \mathbf{Tam}} \mathbf{Set}( p \langle a, b \rangle, p \langle s, t \rangle) \]
-We have fixed the end-states but we vary the paths. We integrate over all paths that have the ``invariance'' or extensibility property that defines the Tambara module. 
+We fix the end-states but we vary the paths. We integrate over all paths that have the ``invariance'' or extensibility property that defines the Tambara module. 
 
 For every such path, we have a mapping that takes the evolution from $a$ to $b$ and produces the evolution (along the same path) from $s$ to $t$. 
 
-If such a mapping exists, then there exists a transformation which, when acting on the states $\langle a, b \rangle$, makes them related to $\langle s, t \rangle$. 
-
+The main theorem of profunctor optics states that if, for a given collection of states, $ \langle a, b \rangle,  \langle s, t \rangle$, such a mapping exists, then these states are related. There exists a transformation and a pair of morphisms that are secretly used in the path integral to extend the original path.
 \[ \int^{m \colon \mathcal{M}} \mathcal{C}(s, m \actL a) \times \mathcal{D}(m \actR b, t)\]
-Again, the mappings are one-way rather than both ways. We can get from $s$ to $m \actL a$ and from $m \actR b$ to $t$. 
+Again, the mappings are one-way rather than both ways. They let us get from $s$ to $m \actL a$ and from $m \actR b$ to $t$. 
 
-This is enough to get us from any path $p \langle a, b \rangle$ to  $p \langle s, t \rangle$ by first extending it using the transformation $\alpha_m$ and then extending it by lifting the two morphisms. And the converse is also true: if every path can be extended then the pair of morphisms must exist.
+This pair of morphisms is enough to extend any path $p \langle a, b \rangle$ to  $p \langle s, t \rangle$ by first applying $\alpha_m$ and then lifting the two morphisms. The converse is also true: if every path can be extended then such a pair of morphisms must exist.
 
 \[
  \begin{tikzcd}
  s
  \arrow[r, bend right, dashed, blue]
- \arrow[rrrrr, bend left, "p"]
  & m \actL a
   \arrow[r, bend left, dashed, red]
-  \arrow[rrr, bend right, "\alpha_m p"']
- & a
+  & a
  \arrow[r, bend right, "p"]
  & b
   \arrow[r, bend left, dashed, red]
@@ -484,5 +508,9 @@ This is enough to get us from any path $p \langle a, b \rangle$ to  $p \langle s
  & t
  \end{tikzcd}
 \]
+
+What seems unique to optics is the interplay between transformations and decompositions: The way $m$ can be interpreted both as parameterizing a monoidal action and the residue left over after removing the focus.
+
+For all the details and a list of references you can look at our paper ``Profunctor optics, a categorical update.'' It's the result of our work at the Adjoint School of Applied Category Theory in Oxford in 2019. It's avaliable on \href{https://arxiv.org/abs/2001.07488}{arXiv}.
 
 \end{document}
