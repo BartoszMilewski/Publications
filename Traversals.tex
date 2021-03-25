@@ -207,7 +207,7 @@ But this is again a natural transformation between two hom-functors, so it can b
 We've used the Yoneda lemma twice, so this trick is called the double-Yoneda.
 
 \section{Profunctors}
-It turns out that the prism also has a functor-polymorphic representation, but it uses profunctors in place of regular functors. A profunctor is a functor of two arguments, but its action on arrows has a twist. Here's the Haskell definiton:
+It turns out that the prism also has a functor-polymorphic representation, but it uses profunctors in place of regular functors. A profunctor is a functor of two arguments, but its action on arrows has a twist. Here's the Haskell definition:
 \begin{haskell}
 class Profunctor p where
   dimap :: (a' -> a) -> (b -> b') -> (p a b -> p a' b')
@@ -290,7 +290,7 @@ This is the set of natural transformations between two hom-functors, so we can u
 We can then use the adjunction again, in the opposite direction, to get:
 \[  [\mathcal{C}, \mathbf{Set}] \Big( \mathcal{C}(s, -), (U \circ F)\big(\mathcal{C}(a, -)\big) \Big) \]
 or, using the end notation:
-\[ \int_{c \colon C} \mathbf{Set} \Big(\mathcal{C}(s, c), (U \circ F)\big(\mathcal{C}(a, -) c \big)\Big) \]
+\[ \int_{c \colon C} \mathbf{Set} \Big(\mathcal{C}(s, c), (U \circ F)\big(\mathcal{C}(a, -)\big) c \Big) \]
 Finally, we use the Yoneda lemma again to get:
 \[ (U \circ F) \big( \mathcal{C}(a, -) \big) s \]
 This is the action of the higher-order functor $(U \circ F)$ on the hom-functor $\mathcal{C}(a, -)$, the result of which is applied to $s$.
@@ -300,11 +300,11 @@ The composition of two functors that form an adjunction is a monad $\Phi$. This 
 \section{Profunctor Representation of Lenses and Prisms}
 The previous formula can be immediately applied to the category of Tambara modules. The forgetful functor takes a Tambara module and maps it to a regular profunctor $p$, an object in the functor category $[\mathcal{C}^{op} \times \mathcal{C}, \mathbf{Set}]$. We replace $a$ and $s$ with pairs of objects. We get:
 \[ \int_{p \colon \mathbf{Tam}} \mathbf{Set}(p \langle a, b \rangle, p \langle s, t \rangle) \cong \Phi \big( (\mathcal{C}^{op} \times \mathcal{C})(\langle a, b \rangle, -) \big) \langle s, t \rangle\]
-The only missing piece is the promonad $\Phi$ (that's a monad operating on profunctors).
+The only missing piece is the higher order monad $\Phi$---a monad operating on profunctors.
 
 The key observation by Pastro and Street was that Tambara modules are higher-order coalgebras. The mappings:
 \[ \alpha \colon p \langle a, b \rangle \to p\langle c \otimes a, c \otimes b \rangle \]
-can be though of as components of a natural transformation
+can be thought of as components of a natural transformation
 \[ \int_{\langle a, b \rangle, c} \mathbf{Set} \big( p \langle a, b \rangle, p\langle c \otimes a, c \otimes b \rangle \big) \]
 By continuity of hom-sets, we can move the end over $c$ to the right:
 \[ \int_{\langle a, b \rangle} \mathbf{Set} \Big( p \langle a, b \rangle, \int_c p\langle c \otimes a, c \otimes b \rangle \Big) \]
@@ -405,7 +405,7 @@ The double Yoneda trick works for these profunctors as well, proving the equival
 
 \section{Generalizations}
 
-It became pretty obvious that Tambara modules can be generalized to an arbitrary monoidal action. We have also realized that we can combine actions in two different categories. We could take an arbitrary monoidal category $\mathcal{M}$, define its action on two categories, $\mathcal{C}$ and $\mathcal{D}$ using strong monoidal functors (here, in infix notation):
+As hinted in my blog post and formalized by Mitchell Riley, Tambara modules can be generalized to an arbitrary monoidal action. We have also realized that we can combine actions in two different categories. We could take an arbitrary monoidal category $\mathcal{M}$, define its action on two categories, $\mathcal{C}$ and $\mathcal{D}$ using strong monoidal functors (here, in infix notation):
 \[ \actL \colon \mathcal{M} \to [\mathcal{C}, \mathcal{C}] \]
 \[ \actR \colon \mathcal{M} \to [\mathcal{D}, \mathcal{D}] \]
 These actions define the most general existential optic:
@@ -511,6 +511,10 @@ This pair of morphisms is enough to extend any path $p \langle a, b \rangle$ to 
 
 What seems unique to optics is the interplay between transformations and decompositions: The way $m$ can be interpreted both as parameterizing a monoidal action and the residue left over after removing the focus.
 
+\section{Conclusion}
+
 For all the details and a list of references you can look at our paper ``Profunctor optics, a categorical update.'' It's the result of our work at the Adjoint School of Applied Category Theory in Oxford in 2019. It's avaliable on \href{https://arxiv.org/abs/2001.07488}{arXiv}.
+
+I'd like to thank Mario Román for reading the draft and providing valuable feedback.
 
 \end{document}
