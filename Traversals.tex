@@ -29,7 +29,7 @@
 \begin{document}
 \maketitle{}
 
-My gateway drug to category theory was the Haskell lens library. What first peaked my attention was the van Laarhoven representation, which used functions that are functor-polymorphic. The following function type:
+My gateway drug to category theory was the Haskell lens library. What first piqued my attention was the van Laarhoven representation, which used functions that are functor-polymorphic. The following function type:
 \begin{haskell}
 type Lens s t a b = 
   forall f. Functor f => (a -> f b) -> (s -> f t)
