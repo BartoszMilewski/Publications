@@ -394,7 +394,7 @@ and use the currying adjunction
 The product of hom-sets is really an end over $\mathbb{N}$, or a set of natural transformations in $[\mathbb{N}, \mathbf{Set}]$
 \[  \int^{c \colon [\mathbb{N}, \mathbf{Set}]}  \mathbf{Set}\big(s, \sum_n c_n \times a^n\big) \times  [\mathbb{N}, \mathbf{Set}]\big( c_-, \mathbf{Set}( b^-, t)\big) \]
 and we can apply the Yoneda lemma to ``integrate'' over $c$ to get:
-\[ \mathbf{Set}(s, \sum_n (Set(b^n, t) \times a^n)\big) \]
+\[ \mathbf{Set}(s, \sum_n ( \mathbf{Set}(b^n, t) \times a^n)\big) \]
 which is exactly the formula for traversals.
 
 Once we understood the existential representation of traversals, the profunctor representation followed. The equivalent of Tambara modules for traversals is a category of profunctors equipped with the monoidal action parameterized by objects in $[\mathbb{N}, \mathbf{Set}]$:
