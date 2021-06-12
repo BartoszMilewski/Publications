@@ -1,0 +1,516 @@
+\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  
+% \overrideIEEEmargins
+% The following packages can be found on http:\\www.ctan.org
+%\usepackage{graphics} % for pdf, bitmapped graphics files
+%\usepackage{epsfig} % for postscript graphics files
+%\usepackage{mathptmx} % assumes new font selection scheme installed
+%\usepackage{times} % assumes new font selection scheme installed
+\usepackage{amsmath} 
+\usepackage{amssymb}
+\usepackage{tikz-cd}
+\usepackage{mathrsfs}
+\usepackage{listings}
+\usepackage{float}
+
+\usepackage{minted}
+\usepackage{etoolbox}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true, frame=single, framesep=1pt, tabsize=1,bgcolor=white,fontsize=\footnotesize]{Haskell}}
+  {\end{minted}}
+\makeatletter
+% replace \medskip before and after the box with nothing, i.e., remove it
+\patchcmd{\minted@colorbg}{\medskip}{}{}{}
+\patchcmd{\endminted@colorbg}{\medskip}{}{}{}
+\makeatother
+
+\begin{document}
+\title{Recursion Schemes for Higher Algebras}
+
+\author{Bartosz Milewski}
+
+\maketitle
+
+\section{Introduction}
+
+Recursive schemes \cite{bananas} are an example of successful application of concepts from category theory to programming. The idea is that recursive data structures can be defined as initial algebras of functors. This allows a separation of concerns: the functor describes the local shape of the data structure, and the fixed point combinator builds the recursion. Operations over data structures can be likewise separated into shallow, non-recursive computations described by algebras, and generic recursive procedures described by catamorphisms. In this way, data structures often replace control structures in driving computations.
+
+Since functors also form a category, it's possible to define functors acting on functors. Such higher order functors show up in a number of free constructions, notably free monads, free applicatives, and cofree comonads. These free constructions have good composability properties and they provide means of separating the creation of effectful computations from their interpretation.
+
+This paper's contribution is to systematize the construction of such interpreters. The idea is that free constructions arise as fixed points of higher order functors, and therefore can be approached with the same algebraic machinery as recursive data structures, only at a higher level. In particular, interpreters can be constructed as catamorphisms or anamorphisms of higher order algebras/coalgebras.
+
+\section{Initial Algebras and Catamorphisms}
+
+The canonical example of a data structure that can be described as an initial algebra of a functor is a list. In Haskell, a list can be defined recursively:
+\begin{haskell}
+data List a = Nil | Cons a (List a)
+\end{haskell}
+There is an underlying non-recursive functor:
+\begin{haskell}
+data ListF a x = NilF | ConsF a x
+instance Functor (ListF a) where
+  fmap f NilF = NilF
+  fmap f (ConsF a x) = ConsF a (f x)
+\end{haskell}
+Once we have a functor, we can define its algebras. An \textit{algebra} consist of a carrier \lstinline$c$ and a structure map (evaluator). An algebra can be defined for an arbitrary functor \lstinline$f$:
+\begin{haskell}
+type Algebra f c = f c -> c
+\end{haskell}
+Here's an example of a simple list algebra, with \lstinline$Int$ as its carrier:
+\begin{haskell}
+sum :: Algebra (ListF Int) Int
+sum NilF = 0
+sum (ConsF a c) = a + c
+\end{haskell}
+Algebras for a given functor form a category. The initial object in this category (if it exists) is called the initial algebra. In Haskell, we call the carrier of the initial algebra \lstinline$Fix f$. Its structure map is a function:
+\begin{haskell}
+f (Fix f) -> Fix f
+\end{haskell}
+By Lambek's lemma, the structure map of the initial algebra is an isomorphism. In Haskell, this isomorphism is given by a pair of functions: the constructor \lstinline$In$ and the destructor \lstinline$out$ of the fixed point combinator:
+\begin{haskell}
+newtype Fix f = In { out :: f (Fix f) }
+\end{haskell}
+When applied to the list functor, the fixed point gives rise to an alternative definition of a list:
+\begin{haskell}
+type List a = Fix (ListF a)
+\end{haskell}
+The initiality of the algebra means that there is a unique algebra morphism from it to any other algebra. This morphism is called a \textit{catamorphism} and, in Haskell, can be expressed as:
+\begin{haskell}
+cata :: Functor f => Algebra f a -> Fix f -> a
+cata alg = alg . fmap (cata alg) . out
+\end{haskell}
+A list catamorphism is known as a fold. Since the list functor is a sum type, its algebra consists of a value---the result of applying the algebra to \lstinline$NilF$---and a function of two variables that corresponds to the \lstinline$ConsF$ constructor. You may recognize those two as the arguments to \lstinline$foldr$:
+\begin{haskell}
+foldr :: (a -> c -> c) -> c -> [a] -> c
+\end{haskell}
+The list functor is interesting because its fixed point is a free monoid. In category theory, monoids are special objects in monoidal categories---that is categories that define a product of two objects. In Haskell, a pair type plays the role of such a product, with the unit type as its unit (up to isomorphism). 
+
+As you can see, the list functor is the sum of a unit and a product. This formula can be generalized to an arbitrary monoidal category with a tensor product $\otimes$ and a unit $1$:
+\[L\, a\, x = 1 + a \otimes x\]
+Its initial algebra is a free monoid \footnote{Strictly speaking, this is true if the tensor product distributes over countable coproducts.}.
+
+\section{Higher Algebras}
+
+In category theory, once you performed a construction in one category, it's easy to perform it in another category that shares similar properties. In Haskell, this might require reimplementing the construction.
+
+We are interested in the category of endofunctors, where objects are endofunctors and morphisms are natural transformations. Natural transformations are represented in Haskell as polymorphic functions:
+\begin{haskell}
+type f :~> g = forall a.dot f a -> g a
+infixr 0 :~>
+\end{haskell}
+In the category of endofunctors we can define (higher order) functors, which map functors to functors and natural transformations to natural transformations:
+\begin{haskell}
+class HFunctor hf where
+  hfmap :: (g :~> h) -> (hf g :~> hf h)
+  ffmap :: Functor g => (a -> b) -> hf g a -> hf g b
+\end{haskell}
+The first function lifts a natural transformation; and the second function, \lstinline$ffmap$, witnesses the fact that the result of a higher order functor is again a functor.
+
+An algebra for a higher order functor \lstinline$hf$ consists of a functor \lstinline$f$ (the carrier object in the functor category) and a natural transformation (the structure map):
+\begin{haskell}
+type HAlgebra hf f = hf f :~> f
+\end{haskell}
+As with regular functors, we can define an initial algebra using the fixed point combinator for higher order functors:
+\begin{haskell}
+newtype FixH hf a = InH { outH :: hf (FixH hf) a }
+\end{haskell}
+Similarly, we can define a higher order catamorphism:
+\begin{haskell}
+hcata :: HFunctor h => HAlgebra h f -> FixH h :~> f
+hcata halg = halg . hfmap (hcata halg) . outH
+\end{haskell}
+The question is, are there any interesting examples of higher order functors and algebras that could be used to solve real-life programming problems?
+
+\section{Free Monad}
+
+We've seen the usefulness of lists, or free monoids, for structuring computations. Let's see if we can generalize this concept to higher order functors.
+
+The definition of a list relies on the cartesian structure of the underlying category. It turns out that there are multiple cartesian structures of interest that can be defined in the category of functors. The simplest one defines a product of two endofunctors as their composition. Any two endofunctors can be composed. The unit of functor composition is the identity functor.
+
+If you picture endofunctors as containers, you can easily imagine a tree of lists, or a list of \lstinline$Maybe$s.
+
+A monoid based on this particular monoidal structure in the endofunctor category is a monad. It's an endofunctor \lstinline$m$ equipped with two natural transformations representing unit and multiplication:
+\begin{haskell}
+class Monad m where
+  eta :: Identity    :~> m
+  mu  :: Compose m m :~> m
+\end{haskell}
+In Haskell, the components of these natural transformations are known as \lstinline$return$ and \lstinline$join$.
+
+A straightforward generalization of the list functor to the functor category can be written as:
+\[L\, f\, g = 1 + f \circ g\]
+or, in Haskell,
+\begin{haskell}
+type FunctorList f g = Identity :+: Compose f g
+\end{haskell}
+where we used the operator \lstinline$:+:$ to define the coproduct of two functors:
+\begin{haskell}
+data (f :+: g) e = Inl (f e) | Inr (g e)
+infixr 7 :+:
+\end{haskell}
+Using more conventional notation, \lstinline$FunctorList$ can be written as:
+\begin{haskell}
+data MonadF f g a = 
+    DoneM a 
+  | MoreM (f (g a))
+\end{haskell}
+We'll use it to generate a free monoid in the category of endofunctors. First of all, let's show that it's indeed a higher order functor in the second argument \lstinline$g$:
+\begin{haskell}
+instance Functor f => HFunctor (MonadF f) where
+  hfmap _   (DoneM a)  = DoneM a
+  hfmap nat (MoreM fg) = MoreM $ fmap nat fg
+  ffmap h (DoneM a)    = DoneM (h a)
+  ffmap h (MoreM fg)   = MoreM $ fmap (fmap h) fg
+\end{haskell}
+In category theory, because of size issues, this functor doesn't always have a fixed point. For most common choices of \lstinline$f $(e.g., for algebraic data types), the initial higher order algebra for this functor exists, and it generates a free monad. In Haskell, this free monad can be defined as:
+\begin{haskell}
+type FreeMonad f = FixH (MonadF f)
+\end{haskell}
+We can show that \lstinline$FreeMonad$ is indeed a monad by implementing \lstinline$return$ and \lstinline$bind$:
+\begin{haskell}
+instance Functor f => Monad (FreeMonad f) where
+  return = InH . DoneM
+  (InH (DoneM a))    >>= k = k a
+  (InH (MoreM ffra)) >>= k = 
+        InH (MoreM (fmap (>>= k) ffra))
+\end{haskell}
+Free monads have many applications in programming. They can be used to write generic monadic code, which can then be interpreted in different monads. A very useful property of free monads is that they can be composed using coproducts. This follows from the theorem in category theory, which states that left adjoints preserve coproducts (or, more generally, colimits). Free constructions are, by definition, left adjoints to forgetful functors. This property of free monads was explored by Swierstra \cite{swierstra} in his solution to the expression problem. I will use an example based on his paper to show how to construct monadic interpreters using higher order catamorphisms.
+
+\subsection{Free Monad Example}
+
+A stack-based calculator can be implemented directly using the state monad. Since this is a very simple example, it will be instructive to re-implement it using the free monad approach.
+
+We start by defining a functor, in which the free parameter \lstinline$k$ represents the continuation:
+\begin{haskell}
+data StackF k  = Push Int k
+               | Top (Int -> k)
+               | Pop k            
+               | Add k
+               deriving Functor
+\end{haskell}
+We use this functor to build a free monad:
+\begin{haskell}
+type FreeStack = FreeMonad StackF
+\end{haskell}
+You may think of the free monad as a tree with nodes that are defined by the functor \lstinline$StackF$. The unary constructors, like \lstinline$Add$ or \lstinline$Pop$, create linear list-like branches; but the \lstinline$Top$ constructor branches out with one child per integer.
+
+The level of indirection we get by separating recursion from the functor makes constructing free monad trees syntactically challenging, so it makes sense to define a helper function:
+\begin{haskell}
+liftF :: (Functor f) => f r -> FreeMonad f r
+liftF fr = InH $ MoreM $ fmap (InH . DoneM) fr
+\end{haskell}
+With this function, we can define smart constructors that build leaves of the free monad tree:
+\begin{haskell}
+push :: Int -> FreeStack ()
+push n = liftF (Push n ())
+
+pop :: FreeStack ()
+pop = liftF (Pop ())
+
+top :: FreeStack Int
+top = liftF (Top id)
+
+add :: FreeStack ()
+add = liftF (Add ())
+\end{haskell}
+All these preparations finally pay off when we are able to create small programs using \lstinline$do$ notation:
+\begin{haskell}
+calc :: FreeStack Int
+calc = do
+  push 3
+  push 4
+  add
+  x <- top
+  pop
+  return x
+\end{haskell}
+Of course, this program does nothing but build a tree. We need a separate interpreter to do the calculation. We'll interpret our program in the state monad, with state implemented as a stack (list) of integers:
+\begin{haskell}
+type MemState = State [Int]
+\end{haskell}
+The trick is to define a higher order algebra for the functor that generates the free monad and then use a catamorphism to apply it to the program. Notice that implementing the algebra is a relatively simple procedure because we don't have to deal with recursion. All we need is to case-analyze the shallow constructors for the free monad functor \lstinline$MonadF$, and then case-analyze the shallow constructors for the functor \lstinline$StackF$.
+\begin{haskell}
+runAlg :: HAlgebra (MonadF StackF) MemState
+runAlg (DoneM a)  = return a
+runAlg (MoreM ex) = 
+  case ex of
+    Top  ik  -> get >>= ik  . head
+    Pop  k   -> get >>= put . tail   >> k
+    Push n k -> get >>= put . (n : ) >> k
+    Add  k   -> do (a: b: s) <- get
+                   put (a + b : s)
+                   k
+\end{haskell}
+The catamorphism converts the program \lstinline$calc$ into a state monad action, which can be run over an empty initial stack:
+\begin{haskell}
+runState (hcata runAlg calc) []
+\end{haskell}
+The real bonus is the freedom to define other interpreters by simply switching the algebras. Here's an algebra whose carrier is the \lstinline$Const$ functor:
+\begin{haskell}
+showAlg :: HAlgebra (MonadF StackF) (Const String)
+
+showAlg (DoneM a) = Const "Done!"
+showAlg (MoreM ex) = Const $
+  case ex of
+    Push n k -> 
+      "Push " ++ show n ++ ", " ++ getConst k
+    Top ik -> 
+      "Top, " ++ getConst (ik 42)
+    Pop k -> 
+      "Pop, " ++ getConst k
+    Add k -> 
+      "Add, " ++ getConst k
+\end{haskell}
+Runing the catamorphism over this algebra will produce a listing of our program:
+\begin{haskell}
+getConst $ hcata showAlg calc
+\end{haskell}
+
+\section{Free Applicative}
+
+There is another monoidal structure that exists in the category of functors. In general, this structure will work for functors from an arbitrary monoidal category $C$ to $Set$. Here, we'll restrict ourselves to endofunctors on $Set$. The product of two functors is given by Day convolution, which can be implemented in Haskell using an existential type:
+\begin{haskell}
+data Day f g c where
+  Day :: f a -> g b -> ((a, b) -> c) -> Day f g c
+\end{haskell}
+The intuition is that a Day convolution contains a container of some \lstinline$a$s, and another container of some \lstinline$b$s, together with a function that can convert any pair \lstinline$(a, b)$ to \lstinline$c$.
+
+Day convolution is a higher order functor:
+\begin{haskell}
+instance HFunctor (Day f) where
+  hfmap nat (Day fx gy xyt) = Day fx (nat gy) xyt
+  ffmap h   (Day fx gy xyt) = Day fx gy (h . xyt)
+\end{haskell}
+In fact, because Day convolution is symmetric up to isomorphism, it is automatically functorial in both arguments.
+
+To complete the monoidal structure, we also need a functor that could serve as a unit with respect to Day convolution. In general, this would be the the hom-functor from the monoidal unit:
+\[C(1, -)\]
+In our case, since $1$ is the singleton set, this functor reduces to the identity functor.
+
+We can now define monoids in the category of functors with the monoidal structure given by Day convolution. These monoids are equivalent to lax monoidal functors which, in Haskell, form the class:
+\begin{haskell}
+class Functor f => Monoidal f where
+  unit  :: f ()
+  (>*<) :: f x -> f y -> f (x, y)
+\end{haskell}
+Lax monoidal functors are equivalent to applicative functors \cite{mcbride}, as seen in this implementation of \lstinline$pure$ and \lstinline$<*>$:
+\begin{haskell}
+  pure  :: a -> f a
+  pure a = fmap (const a) unit
+  (<*>) :: f (a -> b) -> f a -> f b
+  fs <*> as = fmap (uncurry ($)) (fs >*< as)
+\end{haskell}
+We can now use the same general formula, but with Day convolution as the product:
+\[L\, f\, g = 1 + f \star g\]
+to generate a free monoidal (applicative) functor:
+\begin{haskell}
+data FreeF f g t =
+      DoneF t
+    | MoreF (Day f g t)
+\end{haskell}
+This is indeed a higher order functor:
+\begin{haskell}
+instance HFunctor (FreeF f) where
+    hfmap _ (DoneF x)     = DoneF x
+    hfmap nat (MoreF day) = MoreF (hfmap nat day)
+    ffmap f (DoneF x)     = DoneF (f x)
+    ffmap f (MoreF day)   = MoreF (ffmap f day)
+\end{haskell}
+and it generates a free applicative functor as its initial algebra:
+\begin{haskell}
+type FreeA f = FixH (FreeF f)
+\end{haskell}
+
+\subsection{Free Applicative Example}
+
+The following example is taken from the paper by Capriotti and Kaposi \cite{capriotti}. It's an option parser for a command line tool, whose result is a user record of the following form:
+\begin{haskell}
+data User = User
+  { username :: String 
+  , fullname :: String
+  , uid      :: Int
+  } deriving Show
+\end{haskell}
+A parser for an individual option is described by a functor that contains the name of the option, an optional default value for it, and a reader from string:
+\begin{haskell}
+data Option a = Option
+  { optName    :: String
+  , optDefault :: Maybe a
+  , optReader  :: String -> Maybe a 
+  } deriving Functor
+\end{haskell}
+Since we don't want to commit to a particular parser, we'll create a parsing action using a free applicative functor:
+\begin{haskell}
+userP :: FreeA Option User
+userP  = pure User 
+  <*> one (Option "username" (Just "John")  Just)
+  <*> one (Option "fullname" (Just "Doe")   Just)
+  <*> one (Option "uid"      (Just 0)       readInt)
+\end{haskell}
+where \lstinline$readInt$ is a reader of integers:
+\begin{haskell}
+readInt :: String -> Maybe Int
+readInt s = readMaybe s
+\end{haskell}
+and we used the following smart constructors:
+\begin{haskell}
+one :: f a -> FreeA f a
+one fa = InH $ MoreF $ Day fa (done ()) fst
+
+done :: a -> FreeA f a
+done a = InH $ DoneF a
+\end{haskell}
+We are now free to define different algebras to evaluate the free applicative expressions. Here's one that collects all the defaults:
+\begin{haskell}
+alg :: HAlgebra (FreeF Option) Maybe
+alg (DoneF a) = Just a
+alg (MoreF (Day oa mb f)) = 
+  fmap f (optDefault oa >*< mb)
+\end{haskell}
+I used the monoidal instance for \lstinline$Maybe$:
+\begin{haskell}
+instance Monoidal Maybe where
+  unit = Just ()
+  Just x >*< Just y = Just (x, y)
+  _ >*< _ = Nothing
+\end{haskell}
+This algebra can be run over our little program using a catamorphism:
+\begin{haskell}
+parserDef :: FreeA Option a -> Maybe a
+parserDef = hcata alg
+\end{haskell}
+And here's an algebra that collects the names of all the options:
+\begin{haskell}
+alg2 :: HAlgebra (FreeF Option) (Const String)
+alg2 (DoneF a) = Const ".dot"
+alg2 (MoreF (Day oa bs f)) = 
+  fmap f (Const (optName oa) >*< bs)
+\end{haskell}
+Again, this uses a monoidal instance for \lstinline$Const$:
+\begin{haskell}
+instance Monoid m => Monoidal (Const m) where
+  unit = Const mempty
+  Const a >*< Const b = Const (a <> b)
+\end{haskell}
+We can also define the \lstinline$Monoidal$ instance for \lstinline$IO$:
+\begin{haskell}
+instance Monoidal IO where
+  unit = return ()
+  ax >*< ay = do a <- ax
+                 b <- ay
+                 return (a, b)
+\end{haskell}
+This allows us to interpret the parser in the \lstinline$IO$ monad:
+\begin{haskell}
+alg3 :: HAlgebra (FreeF Option) IO
+alg3 (DoneF a) = return a
+alg3 (MoreF (Day oa bs f)) = do
+    putStrLn $ optName oa
+    s <- getLine
+    let ma = optReader oa s
+        a = fromMaybe (fromJust (optDefault oa)) ma
+    fmap f $ return a >*< bs
+\end{haskell}
+
+\section{Cofree Comonad}
+
+Every construction in category theory has its dual---the result of reversing all the arrows. The dual of a product is a coproduct, the dual of an algebra is a coalgebra, and the dual of a monad is a comonad.
+
+Let's start by defining a higher order coalgebra consisting of a carrier \lstinline$f$, which is a functor, and a natural transformation:
+\begin{haskell}
+type HCoalgebra hf f = f :~> hf f
+\end{haskell}
+An initial algebra is dualized to a terminal coalgebra. In Haskell, both are the results of applying the same fixed point combinator, reflecting the fact that the Lambek's lemma is self-dual. The dual to a catamorphism is an anamorphism. Here is its higher order version:
+\begin{haskell}
+hana :: HFunctor hf 
+     => HCoalgebra hf f -> (f :~> FixH hf)
+hana hcoa = InH . hfmap (hana hcoa) . hcoa
+\end{haskell}
+The formula we used to generate free monoids:
+\[1 + a \otimes x\]
+dualizes to:
+\[1 \times a \otimes x\]
+and can be used to generate cofree comonoids \footnote{Not in every category. The actual requirements are quite involved, but they do work for this particular example.}.
+
+A cofree functor is the right adjoint to the forgetful functor. Just like the left adjoint preserved coproducts, the right adjoint preserves products. One can therefore easily combine comonads using products (if the need arises to solve the coexpression problem).
+
+Just like the monad is a monoid in the category of endofunctors, a comonad is a comonoid in the same category. The functor that generates a cofree comonad has the form:
+\begin{haskell}
+type ComonadF f g = Identity :*: Compose f g
+\end{haskell}
+where the product of functors is defined as:
+\begin{haskell}
+data (f :*: g) e = Both (f e) (g e)
+infixr 6 :*:
+\end{haskell}
+Here's the more familiar form of this functor:
+\begin{haskell}
+data ComonadF f g e = e :< f (g e)
+\end{haskell}
+It is indeed a higher order functor, as witnessed by this instance:
+\begin{haskell}
+instance Functor f => HFunctor (ComonadF f) where
+  hfmap nat (e :< fge) = e :< fmap nat fge
+  ffmap h (e :< fge) = h e :< fmap (fmap h) fge
+\end{haskell}
+A cofree comonad is the terminal coalgebra for this functor and can be written as a fixed point:
+\begin{haskell}
+type Cofree f = FixH (ComonadF f)
+\end{haskell}
+Indeed, for any functor \lstinline$f$, \lstinline$Cofree f$ is a comonad:
+\begin{haskell}
+instance Functor f => Comonad (Cofree f) where
+  extract (InH (e :< fge)) = e
+  duplicate fr@(InH (e :< fge)) = 
+                InH (fr :< fmap duplicate fge)
+\end{haskell}
+
+\subsection{Cofree Comonad Example}
+
+The canonical example of a cofree comonad is an infinite stream:
+\begin{haskell}
+type Stream = Cofree Identity
+\end{haskell}
+We can use this stream to sample a function. We'll encapsulate this function inside the following functor (in fact, itself a comonad):
+\begin{haskell}
+data Store a x = Store a (a -> x) 
+    deriving Functor
+\end{haskell}
+We can use a higher order coalgebra to unpack the \lstinline$Store$ into a stream:
+\begin{haskell}
+streamCoa::HCoalgebra (ComonadF Identity)(Store Int)
+streamCoa (Store n f) = 
+    f n :< (Identity $ Store (n + 1) f)
+\end{haskell}
+The actual unpacking is a higher order anamorphism:
+\begin{haskell}
+stream :: Store Int a -> Stream a
+stream = hana streamCoa
+\end{haskell}
+We can use it, for instance, to generate a list of squares of natural numbers:
+\begin{haskell}
+stream (Store 0 (^2))
+\end{haskell}
+Since, in Haskell, the same fixed point defines a terminal coalgebra as well as an initial algebra, we are free to construct algebras and catamorphisms for streams. Here's an algebra that converts a stream to an infinite list:
+\begin{haskell}
+listAlg :: HAlgebra (ComonadF Identity) []
+listAlg(a :< Identity as) = a : as
+
+toList :: Stream a -> [a]
+toList = hcata listAlg
+\end{haskell}
+
+\section{Future Directions}
+
+In this paper I concentrated on one type of higher order functor:
+\[1 + a \otimes x\]
+and its dual. This would be equivalent to studying folds for lists and unfolds for streams. But the structure of the functor category is richer than that. Just like basic data types can be combined into algebraic data types, so can functors. Moreover, besides the usual sums and products, the functor category admits at least two additional monoidal structures generated by functor composition and Day convolution.
+
+Another potentially fruitful area of exploration is the profunctor category, which is also equipped with two monoidal structures, one defined by profunctor composition, and another with Day convolution. A free monoid with respect to profunctor composition is the basis of Haskell \lstinline$Arrow$ library \cite{jaskelioff}. Profunctors also play an important role in the Haskell lens library \cite{kmett}.
+
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{bibliography}
+
+\end{document}
