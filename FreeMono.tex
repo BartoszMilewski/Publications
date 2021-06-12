@@ -19,18 +19,6 @@
   	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
   {\end{minted}}
 
-\lstset{
-language=Haskell,
-basicstyle=\small,
-keywordstyle=\color{black}\bfseries,
-literate={->}{{$\to$}}{1}
-  {=>}{$\Rightarrow$}{1}
-  {<-}{$\leftarrow$}{1}
-  {.}{$\circ$}{1}
-  {forall}{$\forall$}{1}
-  {.dot}{.}{1}
-  {\\}{$\lambda$}{1}}
-
 \usetikzlibrary{positioning,intersections}
 
 \newtheorem{theorem}{Theorem}
@@ -54,7 +42,7 @@ Free Monoids as Initial Algebras
 
 \subsection{Preface}
 
-In my previous blog post I used, without proof, the fact that the initial algebra of the functor $I + h \otimes -$ is a free monoid. The proof of this statement is not at all trivial and, frankly, I would never have been able to work it out by myself. I was lucky enough to get help from a mathematician, Alex Campbell, who sent me the proof he extracted from the paper by G. M. Kelly \cite{Kelly}. 
+In on of my blog posts I used, without proof, the fact that the initial algebra of the functor $I + h \otimes -$ is a free monoid. The proof of this statement is not at all trivial and, frankly, I would never have been able to work it out by myself. I was lucky enough to get help from a mathematician, Alex Campbell, who sent me the proof he extracted from the paper by G. M. Kelly \cite{Kelly}. 
 
 I worked my way through this proof, filling some of the steps that might have been obvious to a mathematician, but not to an outsider. I even learned how to draw diagrams using the TikZ package for \LaTeX. 
 
@@ -361,11 +349,11 @@ data Expr =
   | Double 
   | (Double, Double) 
   | (Double, Double, Double) 
-  | .dot.dot.dot
+  | ...
 \end{haskell}
 Here's an example of an expression:
 \begin{haskell}
-e = (1.dot1, 2.dot2, 3.dot3)
+e = (1.1, 2.2, 3.3)
 \end{haskell}
 As you can see, free expressions are just lists of numbers. There is a function that inserts the unit into the set of expressions:
 \begin{haskell}
@@ -379,7 +367,7 @@ sigma (a, ()) = a
 sigma (a, x)  = (a, x)
 sigma (a, (x, y)) = (a, x, y)
 sigma (a, (x, y, z)) = (a, x, y, z)
-.dot.dot.dot
+...
 \end{haskell}
 
 Let's see how the universal property works in our example. Let's try, as the target $(n, \nu)$, our earlier vector algebra:
@@ -408,8 +396,8 @@ Repeating this process gives us:
 g :: Expr -> Vector
 g () = Vector 3 4
 g a  = Vector (a * 3) (a * 4)
-g (a, b) = Vector (a * b * 3) (a * b * 4)
-.dot.dot.dot
+g (a, b) = Vector (a * b * 3)(a * b * 4)
+...
 \end{haskell}
 This is the unique \hask{g} induced by our \hask{f}.
 
@@ -571,7 +559,7 @@ g :: Expr -> (k -> n)
 g () = f
 g a  = \k -> nu (a, f k)
 g (a, b) = \k -> nu (a, nu (b, f k))
-.dot.dot.dot
+...
 \end{haskell}
 Notice the order reversal in function application. The list that is the argument to \hask{g} is converted to a series of applications of \hask{nu}, with list elements in reverse order. We first apply \hask{nu (b, -)} and then \hask{nu (a, -)}. This reversal is crucial to implementing list concatenation, where \hask{nu} will prepend elements of the first list to the second list. We'll see this in the second installment of this blog post.
 
@@ -1266,7 +1254,7 @@ g :: Expr -> (k -> n)
 g () = f
 g a  = \k -> nu (a, f k)
 g (a, b) = \k -> nu (a, nu (b, f k))
-.dot.dot.dot
+...
 \end{haskell}
 In the current proof we have replaced $k$ with $m$, which generalizes the list of $h$s, $f$ became $id$, and $\nu$ is a function that prepends an element to a list. In other words, $g$ concatenates its list-argument in front of the second list, and it does it in the correct order.
 
