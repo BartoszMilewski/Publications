@@ -1,0 +1,116 @@
+\documentclass[11pt]{amsart}          
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{tikz-cd}
+\usepackage{float}
+\usepackage[]{hyperref}
+\usepackage{minted}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true,frame=single, framesep=5pt, tabsize=1]{Haskell}}
+  {\end{minted}}
+
+\author{Bartosz Milewski}
+\title{Dependent Optics}
+\begin{document}
+\maketitle{}
+
+$\mathcal{C}$ is a locally cartesian closed category.
+
+Slice category $\mathcal{C}/D$
+
+Monoidal category $\mathcal{M}$, 
+
+$\langle E, p \rangle$ a fiber bundle over $D$.
+
+Monoidal action: $L_m \colon E \to E$, a morphism in the slice category:
+
+\[p \circ L_m = p \]
+
+Dependent mixed optic:
+
+\[ \int^{m \colon \mathcal{M}} (\mathcal{C}/D)( S, L_m A) \times (\mathcal{D}/D')(R_m B, T) \]
+
+\section{Dependent lens}
+
+$C$ is a bundle over $D$ with the fibration $p \colon C \to D$.
+
+\[ L_C A = C \times_D A \]
+
+The product in the slice category is given by a pullback. Product is associative and unital. 
+
+Since $\mathcal{C}$ is locally cartesian closed, there is an adjunction between product and exponential.
+
+\[ \int^{C \colon \mathcal{C}/D} (\mathcal{C}/D)( S, C \times A) \times (\mathcal{C}/D)(C \times_D B, T) \cong \]
+
+\[ \int^{C \colon \mathcal{C}/D} (\mathcal{C}/D)( S, C \times A) \times (\mathcal{C}/D)(C , [B, T]) \cong \]
+
+\[  (\mathcal{C}/D)( S, [B, T] \times A) \]
+
+The internal hom $[B, T]$ in a locally cartesian closed category is given by:
+\[ \left [\left \langle B \atop p \right \rangle, \left \langle T \atop q \right \rangle \right ] \cong \Pi_p (p^* T)\]
+where $p \colon B \to D$ is the fibration, $\Pi$ is the dependent product (right adjoint to the base change functor) and $p^*$ is the base-change functor along $p$.
+
+The dependent lens can be written as:
+\[ (\mathcal{C} / D \left( \left \langle S \atop r \right \rangle, \Pi_p (p^* T) \times \left \langle A \atop r' \right \rangle \right) \]
+
+In particular, if $D$ is $\mathbb{N}$, we get
+\[s_n \to (b_n \to t_n, a_n) \]
+which is a pair of setter/getter $\langle s_n \to b_n \to t_n, s_n \to a_n \rangle$ indexed by $n$.
+
+\section{Tambara modules in slice categories}
+
+\[ \alpha_{m, \langle A, B \rangle} \colon P \langle A, B \rangle \to P\langle L_m A, R_m B \rangle \]
+
+Example: Dependent lens.
+\[ \alpha_{C, \langle A, B \rangle} \colon P \langle A, B \rangle \to P\langle C \times_D A, C \times_D B \rangle \]
+
+In particular, if $D$ is $\mathbb{N}$, we get
+\[ \alpha_{c_n, \langle a_n, b_n \rangle} \colon p \langle a_n, b_n \rangle \to p\langle c_n \times b_n, c_n \times b_n \rangle \]
+
+
+\[ \int_{p \colon \mathbf{Tam}} \mathbf{Set}(p \langle A, B \rangle, p \langle S, T \rangle) \]
+
+\section{Traversals}
+
+$\Sigma_n c_n \times a^n$ can be written as the action of the forgetful functor $U \colon \mathcal{C}/\mathbb{N} \to \mathcal{C}$ on the fibered product
+\[ \left \langle {C \atop p} \right \rangle \times \left \langle {L(a) \atop \mathit{len}} \right \rangle \]
+The product in slice categories is defined as a pullback. $L(a) = \Sigma_n a^n$ is the list object or the free monoid over $a$. It is fibrated using the function $\mathit{len}$.
+
+The right adjoint to $U$ is the functor $F(a) = \left \langle \mathit{N} \times a, \pi_1 \right \rangle$.
+
+
+\[ \mathcal{C}(\Sigma_n c_n \times b^n, t) \]
+\[ \cong  
+(\mathcal{C}/\mathbb{N})\left(\left \langle {C \atop p} \right \rangle \times \left \langle {L(b) \atop \mathit{len}} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right) \]
+\[ \cong 
+(\mathcal{C}/\mathbb{N})\left(\left \langle {C \atop p} \right \rangle, \left[ \left \langle {L(b) \atop \mathit{len}} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right] \right) \]
+
+We used the internal hom adjunction in a locally cartesian closed category.
+
+The optic:
+\[ \int^{C \colon \mathcal{C}/\mathbb{N}} \mathcal{C} 
+\left(s, U\left( 
+  \left \langle {C \atop p} \right \rangle \times \left \langle {L(a) \atop \mathit{len}} \right \rangle \right) \right)  
+  \times (\mathcal{C}/\mathbb{N})\left( \left \langle {C \atop p} \right \rangle 
+  \times \left \langle {L(b) \atop \mathit{len}} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right) \]
+  
+\[ \cong \mathcal{C} \left(  s, U\left( 
+  \left[ \left \langle {L(b) \atop \mathit{len}} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right] \times \left \langle {L(a) \atop \mathit{len}} \right \rangle \right) \right) \]
+  
+\section{Random}
+
+\[ \int^{C : [\mathbb{N}, \mathcal{C}]} \mathcal{C}(s, \Sigma_n c_n \times a^n) \times  \mathcal{C}(\Sigma_n c_n \times b^n, t) \cong \mathcal{C}\left( s, \Sigma_n (b^n \to t) \times a^n \right)\]
+
+\[(\mathcal{C}/\mathbb{N}) \left( \left \langle {s\times \mathbb{N} \atop \pi_2} \right \rangle , \left \langle {E \atop p } \right \rangle \right) \cong \mathcal{C} (s, S(E)) \]
+
+
+\end{document}
