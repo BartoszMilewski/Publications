@@ -109,12 +109,10 @@ The traversal is the optic:
 \[ \int^{C \colon \mathcal{C}/\mathbb{N}} \mathcal{C} 
 \left(s, M_c a \right)  
   \times \mathcal{C}(M_c a', s') \]
-
-  
-The forgetful functor $U$ has a right adjoint, which is given by the product:
-\[F(a) = \left \langle \mathbb{N} \times a, \pi_1 \right \rangle\]
-We can use this adjunction to rewrite the second factor in the definition of the traversal:
-\[ \mathcal{C}(M_c a' , s') 
+Eqivalently, the second term can be rewritten as:
+\[  \mathcal{C}( \sum_{n \colon \mathbb{N}} c_n \times a'^n, s') \cong \prod_{n \colon  \mathbb{N}}  \mathcal{C}(c_n \times a'^n, s')\]
+This, in turn, is equivalent to a single morphism in the slice category:
+\[ 
  \cong  
 (\mathcal{C}/\mathbb{N})\left(\left \langle {C \atop p} \right \rangle \times \left \langle {L(a') \atop \mathit{len}} \right \rangle, \left \langle {\mathbb{N} \times s' \atop \pi_1} \right \rangle \right) \]
 We can use the internal hom adjunction to get:
