@@ -173,6 +173,10 @@ The interesting part is thus a transformation whose source is a monomial:
 \end{align*}
 The last isomorphism follows from the interpretation of a product over natural numbers as a natural transformation (an end), and the use of the Yoneda lemma.
 
+This generalizes to a full polynomial case:
+\[ \prod_k \int^{c_n}  \mathbf{Set} (s_k, \sum_n c_n \times a_n) \times  \mathbf{Set} (\sum_m c_m \times b_m, t_k) \]
+
+
 It can also be written in terms of slices:
 \[ \int^{\langle C, p \rangle : \mathbf{Set}/\mathbb{N}} \mathbf{Set} 
 \left(s,  M_c a \right)  
@@ -180,9 +184,6 @@ It can also be written in terms of slices:
   \times \left \langle {B \atop q} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right) \]
  where 
  \[ M_c a = \sum_n c_n \times a_n \]
-
-This generalizes to a full polynomial case:
-\[ \prod_k \int^{c_n}  \mathbf{Set} (s_k, \sum_n c_n \times a_n) \times  \mathbf{Set} (\sum_m c_m \times b_m, t_k) \]
-
+and using Tambara modules that use this transformation.
 
 \end{document}
