@@ -131,4 +131,58 @@ We can then use the ninja Yoneda lemma on the optic to ``integrate'' over $\lang
 which, in components, reads:
 \[ s \to \sum_n \left( (b^n \to t) \times a^n \right) \]
 
+\section{Poly Lens}
+
+A natural transformation between polynomial functors is another kind of dependent lens. A polynomial functor is defined as a sum of exponentials:
+\[ P(y) = \sum_{n \colon \mathbb{N}} s_n \times y^{t_n} \]
+with $s_n$ and $t_n$ are two fibrations over the set of natural numbers.
+
+A natural transformation between $P$ and $Q$ can be simplified:
+\begin{align*}
+ \mathbf{Poly}( \sum_n a_n \times (-)^{t_n}, Q) =
+\\
+ \int_y \mathbf{Set} (\sum_n s_n \times y^{t_n}, Q) \cong
+ \\
+ \prod_n \mathbf{Set} (s_n \times y^{t_n}, Q)
+\end{align*}
+
+
+The interesting part is thus a transformation whose source is a monomial:
+\begin{align*}
+ \mathbf{Poly}(s \times (-)^t, \sum_n a_n \times (-)^{b_n}) =
+\\
+\int_y \mathbf{Set} ( s \times y^t, \sum_n a_n \times y^{b_n}) \cong
+\\
+\int_y \mathbf{Set} ( y^t, [s, \sum_n a_n \times y^{b_n}]) \cong
+\\
+[s, \sum_n a_n \times t^{b_n}]
+ \end{align*}
+ We used the Yoneda lemma and the currying adjunction with the internal hom $x^s = [s, x]$ which, in $\mathbf{Set}$, is isomorphic to the external hom $\mathbf{Set}(s, x)$.
+
+ 
+ The existential representation of this lens can be written as a coend over functors $c \colon \mathbb{N} \to \mathbf{Set}$:
+ 
+\begin{align*}
+\int^{c_n}  \mathbf{Set} (s, \sum_n c_n \times a_n) \times  \mathbf{Set} (\sum_m c_m \times b_m, t) \cong
+\\
+\int^{c_n}  \mathbf{Set} (s, \sum_n c_n \times a_n) \times  \prod_m \mathbf{Set} ( c_m \times b_m, t) \cong
+\\
+\int^{c_n}  \mathbf{Set} (s, \sum_n c_n \times a_n) \times  \int_m \mathbf{Set} ( c_m, [b_m, t]) \cong
+\\ 
+\mathbf{Set} (s, \sum_n [b_n, t] \times a_n)
+\end{align*}
+The last isomorphism follows from the interpretation of a product over natural numbers as a natural transformation (an end), and the use of the Yoneda lemma.
+
+It can also be written in terms of slices:
+\[ \int^{\langle C, p \rangle : \mathbf{Set}/\mathbb{N}} \mathbf{Set} 
+\left(s,  M_c a \right)  
+  \times (\mathbf{Set}/\mathbb{N})\left( \left \langle {C \atop p} \right \rangle 
+  \times \left \langle {B \atop q} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right) \]
+ where 
+ \[ M_c a = \sum_n c_n \times a_n \]
+
+This generalizes to a full polynomial case:
+\[ \prod_k \int^{c_n}  \mathbf{Set} (s_k, \sum_n c_n \times a_n) \times  \mathbf{Set} (\sum_m c_m \times b_m, t_k) \]
+
+
 \end{document}
