@@ -184,6 +184,13 @@ It can also be written in terms of slices:
   \times \left \langle {B \atop q} \right \rangle, \left \langle {\mathbb{N} \times t \atop \pi_1} \right \rangle \right) \]
  where 
  \[ M_c a = \sum_n c_n \times a_n \]
-and using Tambara modules that use this transformation.
+and using Tambara modules for this transformation.
+
+Notice that this is a special case of the general existential optic. The only new element is the introduction of the product of individual optics (such optics could be called \emph{ommatidia}, in analogy with compound eyes of insects). The product can be generalized to an end, leading to the following formula:
+\[ O(A, A'; S, S') = \int_{n \colon \mathcal{N}} \int^{m \colon \mathcal{M}} \mathcal{C}( S n, L_m A) \times \mathcal{D}(R_m A', S' n) \]
+Here, $S$ and $S'$ are functors from $\mathcal{N}$ to $\mathcal{C}$ and $\mathcal{D}$, respectively. The polynomial optic is a special case of all these categories being $\mathbf{Set}$. The particular transformation can be written as:
+\[ M_c a = \int^n C n \times A n \]
+ 
+
 
 \end{document}
