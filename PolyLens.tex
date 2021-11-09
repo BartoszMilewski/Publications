@@ -52,10 +52,10 @@ We can see that a natural transormation between polynomials can be reduced to a 
  We can now use the currying adjunction to transform the mapping out of a product:
 \[ \int_y \mathbf{Set} \left( 
     y^t,  \mathbf{Set}\left(s, \sum_n a_n \times y^{b_n} \right)  \right) \]
- We can now use the Yoneda lemma to eliminate the end. The result is:
+ We use the Yoneda lemma to eliminate the end. The result is:
  \[ \mathbf{Set}\left(s, \sum_n a_n \times t^{b_n} \right) \]
  
-The natural transformation between two arbitrary polynomials is therefore:
+The set of natural transformation between two arbitrary polynomials is therefore:
  \[ \mathbf{Poly}(P, Q) \cong \prod_k \mathbf{Set}\left(s_k, \sum_n a_n \times t_{k}^{\;b_n} \right) \]
 This transformation is called a polynomial lens.
 
@@ -63,20 +63,20 @@ This transformation is called a polynomial lens.
 
 A lens is just a special case of optics. Optics have a very general representation as existential types or, categorically speaking, as coends. 
 
-The general idea is that optics describe various modes of decomposing a type into the focus (or multiple foci) and the residue. This residue is an existential type. It's only property is that it can be combined with a new focus (or foci) to produce a new composite.
+The general idea is that optics describe various modes of decomposing a type into the focus (or multiple foci) and the residue. This residue is an existential type. Its only property is that it can be combined with a new focus (or foci) to produce a new composite.
 
 In the case of polynomial lenses, the foci are described by the family $a_n$. The recomposition replaces this family by a new family $b_n$. It turns out that the residue can be represented by a doubly-indexed family $c_{m n}$. If the indexing is done over a category, rather than a set, the components of $c$ will behave like a profunctor over $\mathcal{N}^{op} \times \mathcal{N}$.
 
 The optic is implemented as a coend over all possible residues:
 
-\[ \mathbf{Poly}(P, Q) \cong \int^{c_{k i}}  \prod_k \mathbf{Set} \left(s_k, \sum_n c_{k n} \times a_n\right) \times \prod_i  \mathbf{Set} \left(\sum_m c_{i m} \times b_m, t_i \right) \]
+\[ \mathbf{Poly}(P, Q) \cong \int^{c_{k i}}  \prod_k \mathbf{Set} \left(s_k, \sum_n c_{n k} \times a_n\right) \times \prod_i  \mathbf{Set} \left(\sum_m c_{m i} \times b_m, t_i \right) \]
 
  
 To show that this representation is equivalent to the previous one, let's perform a few transformations. First, we replace the mapping out of a sum with a product of mappings and use the currying adjunction:
-\[ \mathbf{Poly}(P, Q) \cong \int^{c_{k i}} \prod_k  \mathbf{Set} \left(s_k, \sum_n c_{k n} \times a_n\right) \times  \prod_i  \prod_m \mathbf{Set} \left( c_{i m}, t_i^{b_m} \right) \]
+\[ \mathbf{Poly}(P, Q) \cong \int^{c_{k i}} \prod_k  \mathbf{Set} \left(s_k, \sum_n c_{n k} \times a_n\right) \times  \prod_i  \prod_m \mathbf{Set} \left( c_{m i}, t_i^{b_m} \right) \]
 
  The double product of mappings over $i$ and $m$ can be seen as a natural transformation between two functors from the discrete category $\mathcal{N}^{op} \times \mathcal{N}$. 
-  \[ \prod_{i, m}  \mathbf{Set} \left( c_{i m}, t_i^{b_m} \right) \cong [\mathcal{N}^{op} \times \mathcal{N}, \mathbf{Set}](c_{=-}, t_=^{b_{-}} )\]
+  \[ \prod_{i, m}  \mathbf{Set} \left( c_{m i}, t_i^{b_m} \right) \cong [\mathcal{N}^{op} \times \mathcal{N}, \mathbf{Set}](c_{-=}, t_=^{b_{-}} )\]
 
  
  We can therefore use the co-Yoneda lemma to eliminate the coend over $c_{ki}$. The result is:
@@ -92,7 +92,7 @@ The polynomial lens follows the same pattern. The main observation is that the o
 The monoidal structure is given by ``matrix multiplication'' :
 \[ \sum_n c_{m n} \times d_{n k} \]
 This can be generalized by replacing the sum by a coend, if we treat the $c$'s as profunctors. The monoidal action is then given by a sum (or a coend):
-\[ (L_{c} a)_m = \sum_n c_{m n} \times a_n \]
+\[ (L_{c} a)_m = \sum_n c_{ n m} \times a_n \]
 
 Finally, the two hom-sets in the definition of an optic become sets of natural transformations in the functor category $ [\mathcal{N}, \mathbf{Set}] $. Notice that, for $\mathcal{N}$ a discrete category, the natural transformations are products of morphisms.
 
@@ -103,20 +103,18 @@ Taking it all together, we get:
 \[ \mathbf{Poly}(P, Q) \cong \int^{c}   [\mathcal{N}, \mathbf{Set}]  \left(s, L_c a\right)  \times  [\mathcal{N}, \mathbf{Set}]  \left(R_c b, t\right) \]
 (In our case the action $R$ is the same as $L$.)
 
-A product of two morphisms going in opposite directions can be expressed as a single morphism in a product category:
-\[[\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}] \]
- which gives us an even simpler representation:
-\[  \int^c ([\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}]) \left(\langle   L_c a, R_c b \rangle, \langle s, t \rangle \right)\]
-
+A product of two morphisms going in opposite directions can be expressed as a single morphism in a product category $[\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}] $, which gives us an even simpler representation:
+\[ \int^{c \colon [\mathcal{N}^{op} \times \mathcal{N}, Set]} ([\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}]) \left(M_c\langle   a, b \rangle, \langle s, t \rangle \right)\]
+\[M_c \langle a, b\rangle_{m n} = \langle  \sum_i a_i \times  c_{ i m},  \sum_j  b_j \times c_{j n} \rangle \]
  
 \section{Profunctor Representation}
 
 Since the poly-lens is a special case of general optic, it automatically has a profunctor representation.
 
-The trick is to define a generalized Tambara module, that is a category $\mathbf{T}$ of profunctors $P\langle s_m, t_n \rangle$ acting on slice categories, with additional structure given by the following family of transformations, in components:
-\[\alpha_{m n} \colon P\langle s_m, t_n \rangle \to P \left \langle \sum_i c_{m i}  s_i, \sum_j c_{n j} t_j \right \rangle \]
+The trick is to define a generalized Tambara module, that is a category $\mathbf{T}$ of profunctors $P\langle s_m, t_n \rangle$ acting on functor categories $[\mathcal{N}, Set]$, with additional structure given by the following family of transformations, in components:
+\[\alpha_{m n} \colon P\langle s_m, t_n \rangle \to P \left \langle \sum_i c_{i m}  s_i, \sum_j c_{j n} t_j \right \rangle \]
 or as a set:
-\[ \prod_{m, n} \int_{ \langle s, t \rangle, c} \mathbf{Set} \left(P\langle s_m, t_n \rangle, P \left \langle \sum_i c_{m i}  s_i, \sum_j c_{n j} t_j \right \rangle \right) \]
+\[ \prod_{m, n} \int_{ \langle s, t \rangle, c} \mathbf{Set} \left(P\langle s_m, t_n \rangle, P \left \langle \sum_i c_{i m}  s_i, \sum_j c_{j n} t_j \right \rangle \right) \]
 
 To simplify notation, I'll use $\mathbb{S}$ for $\mathbf{Set}$ and $\mathbb{S}^2$ for $\mathbf{Set}^{op} \times \mathbf{Set}$.
 
@@ -125,8 +123,8 @@ The profunctor representation is based on the double-Yoneda with adjunction tric
 The monad is given by the formula:
 \[ (\Phi P) \langle s_i, t_j \rangle = \sum_{m, n} \int^{\langle x, y \rangle} \int^{c}  
     \mathbb{S}^2
-      \left(\left \langle \sum_k c_{m k}  x_k
-    , \sum_l c_{n l} y_l \right \rangle,  
+      \left(\left \langle \sum_k c_{k m}  x_k
+    , \sum_l c_{l n} y_l \right \rangle,  
         \langle s_i, t_j \rangle \right)
      \times  P\langle x_m, y_n \rangle\]
 
@@ -136,19 +134,19 @@ We use the currying adjunction and the fact that mapping out of a coend/sum is i
  \begin{align*}
 \prod_{i, j, m, n} \int_{\langle s, t\rangle, \langle x, y \rangle, c}  \mathbb{S} \left(
     \mathbb{S}^2
-      \left(\left \langle \sum_k c_{m k}  x_k
-    , \sum_l c_{n l} y_l \right \rangle,  
+      \left(\left \langle \sum_k c_{k m}  x_k
+    , \sum_l c_{l n} y_l \right \rangle,  
         \langle s_i, t_j \rangle \right),
      \mathbb{S}(  P\langle x_m, y_n \rangle, P \langle s_i, t_j \rangle ) \right)
 \end{align*}
 
 The hom functor:
 \[ \mathbb{S}^2  \left(\left \langle 
-      \sum_k c_{m k}  x_k
-    , \sum_l c_{n l} y_l \right \rangle,  
+      \sum_k c_{k m}  x_k
+    , \sum_l c_{l n} y_l \right \rangle,  
         \langle s_i, t_j \rangle \right) \]
 acts like a Dirac/Kronecker delta function under the end/product. The result is:
-\[ \prod_{m, n} \int_{\langle x, y \rangle , c} \mathbb{S} \left(P\langle x_m, y_n \rangle, P \left \langle \sum_k c_{m k}  x_k  , \sum_l c_{n l} y_l \right \rangle \right) \]
+\[ \prod_{m, n} \int_{\langle x, y \rangle , c} \mathbb{S} \left(P\langle x_m, y_n \rangle, P \left \langle \sum_k c_{k m}  x_k  , \sum_l c_{l n} y_l \right \rangle \right) \]
 which is the set of Tambara structures.
 
 The final step is to apply the profunctor monad $\Phi$ to the hom-functor:
@@ -156,15 +154,15 @@ The final step is to apply the profunctor monad $\Phi$ to the hom-functor:
 We get:
 \[ \sum_{p, q} \int^{\langle x, y \rangle} \int^{c}  
     \mathbb{S}^2
-      \left(\left \langle \sum_k c_{p k}  x_k
-    , \sum_l c_{q l} y_l \right \rangle,  
+      \left(\left \langle \sum_k c_{k p}  x_k
+    , \sum_l c_{l q} y_l \right \rangle,  
         \langle s_i, t_j \rangle \right)
      \times  \mathbb{S}^2( \langle a_n, b_m \rangle, \langle x_p, y_q \rangle)\]
 
 We use the co-Yoneda lemma to integrate over $\langle x, y \rangle$ and sum over $p, q$ to get:
 \[ \prod_{i, j} \int^c \mathbb{S}^2  \left(\left \langle 
-      \sum_k c_{i k}  a_k
-    , \sum_l c_{j l} b_l \right \rangle,  
+      \sum_k c_{k i}  a_k
+    , \sum_l c_{l j} b_l \right \rangle,  
         \langle s_i, t_j \rangle \right) \]
 
 \end{document}
