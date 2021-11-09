@@ -87,28 +87,26 @@ which is exactly the original polynomial-to-polynomial transformation.
 
 The general optic can be written as a coend over a monoidal category $\mathcal{M}$ whose action is defined in a pair of categories as $L_m a$ and $R_m b$ respectively:
 \[ O \langle s, t \rangle \langle a, b \rangle = \int^{m \colon \mathcal{M} } \mathcal{C} (s, L_m a) \times  \mathcal{D} (R_m b, t) \]
-The polynomial lens follows the same pattern. The main observation is that the objects on which this lens acts come from a slice category $\mathbf{Set}/\mathcal{N}$. The monoidal category in question is the category of matrices or, if we chose $\mathcal{N}$ to be a category, profunctors $c_{m n} \colon \mathcal{N}^{op} \times \mathcal{N} \to \mathbf{Set}$.
+The polynomial lens follows the same pattern. The main observation is that the objects on which this lens acts come from a functor category $[\mathcal{N}, \mathbf{Set}]$. The monoidal category in question is the category of matrices or, if we chose $\mathcal{N}$ to be a category, profunctors $c_{m n} \colon \mathcal{N}^{op} \times \mathcal{N} \to \mathbf{Set}$.
 
 The monoidal structure is given by ``matrix multiplication'' :
 \[ \sum_n c_{m n} \times d_{n k} \]
 This can be generalized by replacing the sum by a coend, if we treat the $c$'s as profunctors. The monoidal action is then given by a sum (or a coend):
 \[ (L_{c} a)_m = \sum_n c_{m n} \times a_n \]
 
-Finally, the two hom-sets in the definition of an optic become sets of natural transformations in the functor category:
-\[ [ \mathbf{Set}/\mathcal{N}, \mathcal{N}]  \]
-Notice that, for $\mathcal{N}$ a discrete category, the natural transformations are products of morphisms.
+Finally, the two hom-sets in the definition of an optic become sets of natural transformations in the functor category $ [\mathcal{N}, \mathbf{Set}] $. Notice that, for $\mathcal{N}$ a discrete category, the natural transformations are products of morphisms.
 
-\[ [ \mathbf{Set}/\mathcal{N}, \mathcal{N}] (s, t) \cong \prod_k  \mathbf{Set} \left(s_k, t_k\right) \]
+\[ [\mathcal{N}, \mathbf{Set}] (s, t) \cong \prod_k  \mathbf{Set} \left(s_k, t_k\right) \]
 
 Taking it all together, we get:
 
-\[ \mathbf{Poly}(P, Q) \cong \int^{c}   [ \mathbf{Set}/\mathcal{N}, \mathcal{N}]  \left(s, L_c a\right)  \times  [ \mathbf{Set}/\mathcal{N}, \mathcal{N}]  \left(R_c b, t\right) \]
+\[ \mathbf{Poly}(P, Q) \cong \int^{c}   [\mathcal{N}, \mathbf{Set}]  \left(s, L_c a\right)  \times  [\mathcal{N}, \mathbf{Set}]  \left(R_c b, t\right) \]
 (In our case the action $R$ is the same as $L$.)
 
 A product of two morphisms going in opposite directions can be expressed as a single morphism in a product category:
-\[ [(\mathbf{Set}/\mathcal{N})^{op}\times \mathbf{Set}/\mathcal{N}, \mathcal{N}] \]
+\[[\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}] \]
  which gives us an even simpler representation:
-\[  \int^c [(\mathbf{Set}/\mathcal{N})^{op}\times \mathbf{Set}/\mathcal{N}, \mathcal{N}] ) \left(\langle   L_c a, R_c b \rangle, \langle s, t \rangle \right)\]
+\[  \int^c ([\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}]) \left(\langle   L_c a, R_c b \rangle, \langle s, t \rangle \right)\]
 
  
 \section{Profunctor Representation}
