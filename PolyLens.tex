@@ -86,13 +86,17 @@ which is exactly the original polynomial-to-polynomial transformation.
 \section{Generalizations}
 
 The general optic can be written as a coend over a monoidal category $\mathcal{M}$ whose action is defined in a pair of categories as $L_m a$ and $R_m b$ respectively:
-\[ O \langle s, t \rangle \langle a, b \rangle = \int^{m \colon \mathcal{M} } \mathcal{C} (s, L_m a) \times  \mathcal{D} (R_m b, t) \]
-The polynomial lens follows the same pattern. The main observation is that the objects on which this lens acts come from a functor category $[\mathcal{N}, \mathbf{Set}]$. The monoidal category in question is the category of matrices or, if we chose $\mathcal{N}$ to be a category, profunctors $c_{m n} \colon \mathcal{N}^{op} \times \mathcal{N} \to \mathbf{Set}$.
-
-The monoidal structure is given by ``matrix multiplication'' :
+\[ O \langle s, t \rangle \langle a, b \rangle = \int^{m \colon \mathcal{M} } \mathcal{C} (s, M_m a) \times  \mathcal{D} (N_m b, t) \]
+The polynomial lens follows the same pattern. The main observation is that the objects on which this lens acts come from a functor category $[\mathcal{N}, \mathbf{Set}]$. The monoidal category in question is the category of matrices or, if we chose $\mathcal{N}$ to be a category, profunctors 
+\[ c \langle m, n \rangle \colon \mathcal{N}^{op} \times \mathcal{N} \to \mathbf{Set} \]
+Notice that these profunctors form a monoidal category where the tensor product of any two profunctors is their composition:
+\[ (c \diamond c') \langle m, n \rangle = \int^k c \langle m, k \rangle \times c' \langle k, n \rangle \]
+and the unit is the hom-functor $\mathcal{N}(m, n)$. In the case of $\mathcal{N}$ a discrete category, these definitions decay to standard matrix multiplication and the Kronecker delta.
 \[ \sum_n c_{m n} \times d_{n k} \]
-This can be generalized by replacing the sum by a coend, if we treat the $c$'s as profunctors. The monoidal action is then given by a sum (or a coend):
-\[ (L_{c} a)_m = \sum_n c_{ n m} \times a_n \]
+The monoidal action is then given by a sum:
+\[ (M_{c} a)_m = \sum_n a_n \times c_{ n m} \]
+Again, this is a special case of the profunctor acting on a co-presheaf:
+\[ M_c a = \int^n a(n) \times c \langle n, - \rangle \]
 
 Finally, the two hom-sets in the definition of an optic become sets of natural transformations in the functor category $ [\mathcal{N}, \mathbf{Set}] $. Notice that, for $\mathcal{N}$ a discrete category, the natural transformations are products of morphisms.
 
@@ -100,18 +104,21 @@ Finally, the two hom-sets in the definition of an optic become sets of natural t
 
 Taking it all together, we get:
 
-\[ \mathbf{Poly}(P, Q) \cong \int^{c}   [\mathcal{N}, \mathbf{Set}]  \left(s, L_c a\right)  \times  [\mathcal{N}, \mathbf{Set}]  \left(R_c b, t\right) \]
-(In our case the action $R$ is the same as $L$.)
+\[ \mathbf{Poly}(P, Q) \cong \int^{c}   [\mathcal{N}, \mathbf{Set}]  \left(s, M_c a\right)  \times  [\mathcal{N}, \mathbf{Set}]  \left(N_c b, t\right) \]
+(In our case the action $N$ is the same as $M$.)
 
 A product of two morphisms going in opposite directions can be expressed as a single morphism in a product category $[\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}] $, which gives us an even simpler representation:
 \[ \int^{c \colon [\mathcal{N}^{op} \times \mathcal{N}, Set]} ([\mathcal{N}, \mathbf{Set}]^{op}\times [\mathcal{N}, \mathbf{Set}]) \left(M_c\langle   a, b \rangle, \langle s, t \rangle \right)\]
+with:
 \[M_c \langle a, b\rangle_{m n} = \langle  \sum_i a_i \times  c_{ i m},  \sum_j  b_j \times c_{j n} \rangle \]
  
 \section{Profunctor Representation}
 
 Since the poly-lens is a special case of general optic, it automatically has a profunctor representation.
 
-The trick is to define a generalized Tambara module, that is a category $\mathbf{T}$ of profunctors $P\langle s_m, t_n \rangle$ acting on functor categories $[\mathcal{N}, Set]$, with additional structure given by the following family of transformations, in components:
+The trick is to define a generalized Tambara module, that is a category $\mathbf{T}$ of profunctors:
+\[ P \colon [\mathcal{N}, \mathbf{Set}]^{op}  \times [\mathcal{N}, \mathbf{Set}] \to \mathbf{Set} \]
+with additional structure given by the following family of transformations, in components:
 \[\alpha_{m n} \colon P\langle s_m, t_n \rangle \to P \left \langle \sum_i c_{i m}  s_i, \sum_j c_{j n} t_j \right \rangle \]
 or as a set:
 \[ \prod_{m, n} \int_{ \langle s, t \rangle, c} \mathbf{Set} \left(P\langle s_m, t_n \rangle, P \left \langle \sum_i c_{i m}  s_i, \sum_j c_{j n} t_j \right \rangle \right) \]
@@ -164,5 +171,22 @@ We use the co-Yoneda lemma to integrate over $\langle x, y \rangle$ and sum over
       \sum_k c_{k i}  a_k
     , \sum_l c_{l j} b_l \right \rangle,  
         \langle s_i, t_j \rangle \right) \]
+        
+\section{As Adjunction}
+
+The second term in the definition of the existential optic:
+
+\[ \prod_i  \mathbf{Set} \left(\sum_m b_m \times c_{m i}, t_i \right) \]
+can be considered a natural transformation between two functors:
+\[ [\mathcal{N}, \mathbf{Set}](L_c b, t) \]
+We look at $b$ and $t$ as functors in $[\mathcal{N}, \mathbf{Set}]$, and $L_c$ as a functor in $[[\mathcal{N}, \mathbf{Set}], [\mathcal{N}, \mathbf{Set}]]$. 
+
+The parameter $c$ itself is an object in the profunctor category (which plays the role of the actegory):
+\[ \mathcal{M} = [\mathcal{N}^{op} \times \mathcal{N}, \mathbf{Set}] \]
+
+When we fix $b$ and vary $c$, $L_c b$ becomes a functor  in $[\mathcal{M},  [\mathcal{N}, \mathbf{Set}]]$. This functor has a right adjoint:
+\[ [\mathcal{N}, \mathbf{Set}](L_c b, t) \cong \mathcal{M}(c, R_b t)\]
+where:
+\[(R_b t)_{\langle m, n \rangle} =  t_n^{\;b_{m}} \]
 
 \end{document}
