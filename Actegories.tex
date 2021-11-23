@@ -1,0 +1,149 @@
+\documentclass[11pt]{amsart}          
+\usepackage{amsfonts}
+\usepackage{amssymb}  
+\usepackage{amsthm} 
+\usepackage{amsmath} 
+\usepackage{tikz-cd}
+\usepackage{float}
+\usepackage[]{hyperref}
+\usepackage{minted}
+\hypersetup{
+  colorlinks,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue}
+\newcommand{\hask}[1]{\mintinline{Haskell}{#1}}
+\newenvironment{haskell}
+  {\VerbatimEnvironment
+  	\begin{minted}[escapeinside=??, mathescape=true, tabsize=1, bgcolor=black!3, xleftmargin=3pt ]{Haskell}}
+  {\end{minted}}
+\makeatletter
+% replace \medskip before and after the box with nothing, i.e., remove it
+\patchcmd{\minted@colorbg}{\medskip}{}{}{}
+\patchcmd{\endminted@colorbg}{\medskip}{}{}{}
+\makeatother
+
+\author{Bartosz Milewski}
+\title{Actegories}
+\begin{document}
+\maketitle{}
+
+\section{Motivation}
+A lens is a reification of the concept of object composition. In a nutshell, it describes the process of decomposing the source object $s$ into a focus $a$ and a residue $c$ and recomposing a new object $t$ from a new focus $b$ and the same residue $c$. 
+
+The key observation is that we don't care what the residue is as long as it exists. This is why a lens can be implemented, in Haskell, as an existential type:
+\begin{haskell}
+data Lens s t a b where
+ Lens :: (s -> (c, a)) -> ((c, b) -> t) -> Lens s t a b
+\end{haskell}
+In category theory, the existential type is represented as a coend---essentially a gigantic sum overr all objects $c$ in the category $\mathcal{C}$:
+\[ \mathcal{L}\langle s, t\rangle \langle a, b \rangle = \int^{c \colon \mathcal{C}} \mathcal{C}(s, c \times a) \times  \mathcal{C}(c \times b, t) \]
+
+There is a simple recipe to turn this representation into the more familiar one. The first step is to use the currying adjunction on the second hom-functor:
+\[  \mathcal{C}(c \times b, t) \cong  \mathcal{C}(c, [b, t]) \]
+Here, $[b, t]$ is the internal hom, or the function object \hask{b->t}.
+Once the object $c$ appears as the source in the hom-set, we can use the co-Yoneda lemma to eliminate the coend. This is the formula we use:
+\[ \int^c F c \times  \mathcal{C}(c, x) \cong F x\]
+It works for any functor $F$ from the category $\mathcal{C}$ to $\mathbf{Set}$ so, in particular we have:
+\[ \mathcal{L}\langle s, t\rangle \langle a, b \rangle \cong \int^{c} \mathcal{C}(s, c \times a) \times  \mathcal{C}(c, [b, t]) \cong \mathcal{C}(s, [b, t] \times a) \]
+The result is a pair of arrows:
+\[ \mathcal{C}(s, [b, t]) \times \mathcal{C}(s, a) \]
+the first corrsponding to:
+\begin{haskell}
+set :: s -> b -> t
+\end{haskell}
+and the second to:
+\begin{haskell}
+get :: s -> a
+\end{haskell}
+
+It turns out that this trick works for more general optics. It all depends on being able to isolate the object $c$ as the source of the second hom-set. 
+
+We've been able to do it case-by-case for lenses, prisms, traversals, and the whole zoo of optics. It turns out that the same problem was studied in all its generality by Australian category theorists \href{http://www.tac.mta.ca/tac/volumes/9/n4/n4.pdf}{Janelidze and Kelly} in a context that had nothing to do with optics.
+
+\section{Monoidal Actions}
+
+Here's the most general definition of an optic:
+\[ \mathcal{O}\langle s, t\rangle \langle a, b \rangle = \int^{c \colon \mathcal{M}} \mathcal{D}(s, K_c a) \times  \mathcal{C}(L_c b, t) \]
+This definition involves three separate categories. The category $\mathcal{M}$ is monoidal, and it has an action defiend on both $\mathcal{C}$ and $\mathcal{D}$. A category with a monoidal action is called an \emph{actegory}.
+
+We get the definition of a lens by having all three categories be the same---a cartesian closed category $\mathcal{C}$. We define the action of this category on itself:
+\[L_c a = c \times a \]
+and the same for $K_c$. 
+
+There are two equivalent ways of defining the action of a monoidal category. One is as the mapping 
+\[ \bullet \colon \mathcal{M} \times \mathcal{C} \to \mathcal{C} \]
+written in infix notation as $c \bullet a$. It has to be equipped with two additional structure maps---isomorphisms that relate the tensor product $\otimes$ in $\mathcal{M}$ and its unit $I$ to the action in $\mathcal{C}$:
+
+\[ \alpha_{d c a} \colon (d \otimes c) \bullet a  \to d \bullet (c \bullet a) \]
+\[ \lambda_a \colon I \bullet a \to a \]
+plus some coherence conditions corresponding to associativity and unit laws. 
+
+Using this notation, we can rewrite the definition of an optic as:
+\[ \mathcal{O}\langle s, t\rangle \langle a, b \rangle = \int^{c \colon \mathcal{M}} \mathcal{D}(s, c \bullet a) \times  \mathcal{C}(c \bullet b, t) \]
+with the understanding that we use the same symbol for both the action in $\mathcal{C}$ and $\mathcal{D}$.
+
+Alternatively, we can curry the action $\bullet$, and use the mapping:
+\[ L \colon \mathcal{M} \to [\mathcal{C}, \mathcal{C}] \]
+The target category here is the category of endofunctors $[\mathcal{C}, \mathcal{C}]$, which is naturally equipped with a monoidal structure given by functor composition (and, as we well know, a monad is just a monoid in that category). 
+
+The two structure maps from the definition of $\bullet$ translate to the requirement that $L$ be a strict monoidal functor, mapping tensor product to functor composition and unit object to identity functor.
+
+\section{The Adjunction}
+
+When we were eliminating the coend in the definition of a lens, we used the currying adjunction. This particular adjunction works inside a single category but, in general, an adjunction relates two functors between a pair of categories. Therefore, to eliminate the end from the optic, we need an adjunction that looks like this:
+\[ \mathcal{C}(c \bullet a, t) \cong \mathcal{M}(c, R_a t) \]
+The category on the right is the monoidal category $\mathcal{M}$, because $c$ is the object from this category. 
+
+Using the adjunction and the co-Yoneda lemma we get:
+\[ \mathcal{O}\langle s, t\rangle \langle a, b \rangle = \int^{c \colon \mathcal{M}} \mathcal{D}(s, c \bullet a) \times  \mathcal{M}(c, R_b t) \cong  \mathcal{D}(s, R_b t \bullet a) \]
+
+
+There is a whole slew of monoidal actions that have the right adjoint of this type. Let's look at an example.
+
+The category of sets is a monoidal category, and we can define its action on another category using the formula:
+\[ \mathcal{C}(c \cdot a, t) \cong \mathbf{Set}(c, \mathcal{C}(a, t)) \]
+This is the definition of a \emph{copower}. A category in which this adjunction holds for all objects is called \emph{copowered} or \emph{tensored} over $\mathbf{Set}$. 
+
+The intuition is that a copower is like an iterated sum (hence the multiplication sign). Indeed, a mapping out of a coproduct of $c$ copies of $a$, where $c$ is a set, is equivalent to $c$ mappings out of $a$. 
+
+This formula generalizes to the case in which $\mathcal{C}$ is a category enriched over a monoidal category $\mathcal{V}$. In that case we have:
+\[ \mathcal{C}(c \cdot a, t) \cong \mathcal{V}(c, \mathcal{C}(a, t)) \]
+Here, the hom $\mathcal{C}(a, t)$ is an object in $\mathcal{V}$.
+
+\section{Relation to Enrichment}
+
+We are interested in the adjunction:
+\[ \mathcal{C}( c \bullet a, t) \cong \mathcal{M}(c, R_a t) \]
+The functor $R$ is covariant in $t$ and contravariant in $a$:
+\[ R \colon \mathcal{C}^{op} \times \mathcal{C} \to \mathcal{M} \]
+In other words, it's a profunctor. In fact, it has the right signature to be a hom-functor. And this is what Janelidze and Kelly show: the functor $R$ can serve as the hom-functor that generates the enrichment for $\mathcal{C}$. If we call the enriched category $\mathbf{C}$, we can define the hom-object as:
+\[\mathbf{C}(a, t) = R_a t \]
+Our adjunction can be rewritten as:
+\[ \mathcal{C}( c \bullet a, t) \cong \mathcal{M}(c, \mathbf{C}(a, t)) \]
+The counit of this adjunction is a mapping:
+\[ \epsilon_{a t} \colon \mathbf{C}(a, t)  \bullet a \to t \]
+
+The hom-object $\mathbf{C}(a, t)$ in an enriched category must satisfy the composition and identity rules. In an enriched category, composition is a mapping:
+\[ \circ \colon \mathbf{C}(b, t) \otimes \mathbf{C}(a, b) \to \mathbf{C}(a, t) \]
+Let's see if we can get this mapping from our adjunction by replacing $c$ with $\mathbf{C}(b, t) \otimes \mathbf{C}(a, b)$. We get:
+\[ \mathcal{C}( (\mathbf{C}(b, t) \otimes \mathbf{C}(a, b)) \bullet a, t) \cong \mathcal{M}(\mathbf{C}(b, t) \otimes \mathbf{C}(a, b), \mathbf{C}(a, t)) \]
+All we need is to point at a morphism on the left that is the following composite:
+\begin{align*}
+\big( & \mathbf{C}(b, t) \otimes \mathbf{C}(a, b)\big) \bullet a  \xrightarrow{\alpha}
+\\ &\mathbf{C}(b, c) \bullet \big(\mathbf{C}(a, b)) \bullet a\big)   \xrightarrow{id \; \bullet \; \epsilon}
+\\ &\mathbf{C}(b, t) \bullet b  \xrightarrow{\epsilon} t
+\end{align*}
+We used the structure map $\alpha$ and (twice) the counit of the adjunction $\epsilon$.
+
+Similarly, the identity of composition, which is the mapping:
+\[ id_a \colon I \to \mathbf{C}(a, a) \]
+is adjoint to $\lambda_a$.
+
+Janelidze and Kelly prove that the action of a monoidal right-closed category having the right adjoint is equivalent to the existence of the tensored enrichment of the category on which this action is defined.
+
+In the next installment I'll show you how to use these results to derive and then generalize polynomial optics.
+
+\section{Acknowledgments}
+I'm grateful to Jules Hedges and his collaborators for sharing their insights and unpublished notes with me.
+\end{document}
