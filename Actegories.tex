@@ -145,22 +145,7 @@ Janelidze and Kelly go on to prove that the action of a monoidal right-closed ca
 
 The two examples of monoidal actions we've seen so far are indeed equivalent to enrichments. A cartesian closed category in which we defined the action $L_c a = c \times a$ is automatically self-enriched. The copower action $L_c a = c \cdot a$ is equivalent to enrichment over $\mathbf{Set}$ (which doesn't mean much, since regular categories are naturally $\mathbf{Set}$-enriched; but not all of them are tensored).
 
-In the next installment I'll show you how to use these results to derive polynomial optics.
-
 \section{Acknowledgments}
 I'm grateful to Jules Hedges and his collaborators for sharing their insights and unpublished notes with me.
-
-
-\[  \int^{c \colon \mathcal{M}} \mathcal{D}(s, K_c a) \times  \mathcal{C}(L_c b, t) \cong  \int^{c \colon \mathcal{M}} \mathcal{D}(s, c \bullet a) \times  \mathcal{M}(c, R_b t) \cong  \mathcal{D}(s, R_b t \bullet a) \]
-
-\begin{align*}
-  &\int^{c \colon \mathcal{M}} \mathcal{D}(s, K_c a) \times  \mathcal{C}(L_c b, t) 
-  \\
- \cong &\int^{c \colon \mathcal{M}} \mathcal{D}^{op}(K_c a, s) \times  \mathcal{C}(L_c b, t)
- \\
- \cong &\int^{c \colon \mathcal{M}} (\mathcal{D}^{op} \times  \mathcal{C})(\langle K_c a, L_c b \rangle, \langle s, t \rangle)
- \\
-\cong &\int^{c \colon \mathcal{M}} (\mathcal{D}^{op} \times  \mathcal{C})(M_c \langle a, b \rangle, \langle s, t \rangle)
-\end{align*}
 
 \end{document}
