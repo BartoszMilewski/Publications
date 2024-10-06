@@ -27,15 +27,20 @@ reverse (a : as) = reverse as ++ [a]
 
 -- Horizontal composition
 
+-- Define some dummy functors
 data F  x
 data F' x 
 data G  x
 data G' x 
+data H  x
 instance Functor G' where
     fmap = undefined 
 instance Functor G where
     fmap = undefined 
+instance Functor H where
+    fmap = undefined 
 
+-- Define some dummy natural transformations
 
 alpha :: forall x. F x -> F' x
 alpha = undefined
@@ -53,5 +58,30 @@ beta_alpha' = fmap alpha . beta
 beta_f :: forall x. G (F x) -> G' (F x)
 beta_f = beta
 
-h_alpha :: forall x. H (G x) -> H (G' x)
-h_alpha = fmap alpha
+g_alpha :: forall x. G (F x) -> G (F' x)
+g_alpha = fmap alpha
+
+h_beta_f :: forall x. H (G (F x)) -> H (G' (F x))
+h_beta_f = fmap beta
+
+-- Exercises
+-- safeHead :: Natural [] Maybe
+-- reverse  :: Natural [] []
+
+comp1 :: [[a]] -> Maybe [a]
+comp1 = safeHead . fmap reverse
+
+comp2 :: [[a]] -> Maybe [a]
+comp2 = fmap reverse . safeHead
+
+test1 = comp1 [[], [4], [5, 6]]
+test2 = comp2 [[], [4], [5, 6]]
+
+comp1' :: [[a]] -> [Maybe a]
+comp1' = reverse . fmap safeHead
+
+comp2' :: [[a]] -> [Maybe a]
+comp2' = fmap safeHead . reverse
+
+test1' = comp1 [[], [4], [5, 6]]
+test2' = comp2 [[], [4], [5, 6]]
