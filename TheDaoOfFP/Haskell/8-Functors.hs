@@ -1,5 +1,5 @@
 import Prelude hiding (Functor, fmap)
-import Data.Kind
+import Data.Kind ( Type )
 
 class Functor f where
   fmap :: (a -> b) -> (f a -> f b)
